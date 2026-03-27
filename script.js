@@ -679,6 +679,19 @@ function setupLeadPopup() {
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    const submitterValue = String(e?.submitter?.value || '').toLowerCase();
+    if (submitterValue === 'cancel' || submitterValue === 'notnow') {
+      localStorage.setItem(key, 'dismissed');
+      if (note) note.textContent = '';
+      try {
+        dlg.close('cancel');
+      } catch {
+        // ignore
+      }
+      return;
+    }
+
     if (note) note.textContent = 'Submitting…';
 
     const fd = new FormData(form);
