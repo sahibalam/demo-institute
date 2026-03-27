@@ -677,6 +677,21 @@ function setupLeadPopup() {
     }
   });
 
+  const notNowBtn = qs('#leadNotNow');
+  if (notNowBtn) {
+    notNowBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      localStorage.setItem(key, 'dismissed');
+      if (note) note.textContent = '';
+      try {
+        dlg.close('cancel');
+      } catch {
+        // ignore
+      }
+    });
+  }
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
