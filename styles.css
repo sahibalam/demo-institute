@@ -858,7 +858,7 @@ img{max-width:100%; display:block}
 .notice-item{
   border-radius:14px;
   padding:10px 12px;
-  background:rgba(255,255,255,.82);
+  background:rgba(255, 237, 213, 0.92);
   border:1px solid rgba(31,42,36,.10);
   font-size:13px;
   line-height:1.5;
@@ -875,7 +875,7 @@ img{max-width:100%; display:block}
   gap:12px;
   padding:10px 12px;
   border-radius:14px;
-  background:rgba(255,255,255,.78);
+  background:rgba(255, 237, 213, 0.92);
   border:1px solid rgba(124,58,237,.16);
   box-shadow:0 12px 26px rgba(19,27,22,.06);
 }
