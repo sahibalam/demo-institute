@@ -106,6 +106,45 @@ img{max-width:100%; display:block}
   backdrop-filter: blur(10px);
   border-bottom:1px solid rgba(31,42,36,.08);
 }
+
+.marquee-band{
+  background:linear-gradient(90deg, rgba(245,158,11,.18), rgba(251,146,60,.16));
+  border-bottom:1px solid rgba(31,42,36,.08);
+}
+
+.marquee{
+  width:min(1120px, 92vw);
+  margin:0 auto;
+  overflow:hidden;
+}
+
+.marquee-track{
+  display:flex;
+  width:max-content;
+  will-change:transform;
+  animation:marquee-scroll 16s linear infinite;
+}
+
+.marquee-content{
+  padding:10px 18px;
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:.2px;
+  color:rgba(27,20,13,.92);
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+
+.marquee-band:hover .marquee-track{animation-play-state:paused}
+
+@keyframes marquee-scroll{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-50%)}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .marquee-track{animation:none}
+}
 .header-inner{
   display:flex;
   align-items:center;
