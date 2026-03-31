@@ -1431,7 +1431,7 @@ function setupStudentDashboard() {
     items.forEach((it) => {
       const title = (it.title || it.fileName || 'Study Material').trim();
       const meta = `Class ${it.class || ''}${it.section ? ' • ' + it.section : ''}${it.subject ? ' • ' + it.subject : ''}`.trim();
-      const link = it.webContentLink || it.webViewLink || '';
+      const link = it.webViewLink || it.webContentLink || '';
       const row = document.createElement('div');
       row.className = 'student-item';
       row.innerHTML = `
@@ -1440,7 +1440,7 @@ function setupStudentDashboard() {
           <div class="student-item-meta">${escapeHtml(meta)}</div>
         </div>
         <div class="student-item-right">
-          <a class="student-item-link" href="${escapeHtml(link)}" target="_blank" rel="noopener" download>Download</a>
+          <a class="student-item-link" href="${escapeHtml(link)}" target="_blank" rel="noopener">Open</a>
         </div>
       `;
       listEl.appendChild(row);
