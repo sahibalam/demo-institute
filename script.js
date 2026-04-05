@@ -339,9 +339,8 @@ function setupEnquireModal() {
     if (typeof dlg.showModal === 'function') dlg.showModal();
   };
 
-  qsa('a.btn.btn-primary', document).forEach((a) => {
-    if ((a.textContent || '').trim().toLowerCase() !== 'enquire') return;
-    a.addEventListener('click', open);
+  qsa('[data-enquire-trigger]', document).forEach((el) => {
+    el.addEventListener('click', open);
   });
 
   const submitBtn = qs('#admissionSubmit', dlg);
