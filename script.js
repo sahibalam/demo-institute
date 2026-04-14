@@ -1321,6 +1321,20 @@ function setupStudentDashboard() {
   const shell = qs('#studentShell');
   if (!shell) return;
 
+  const drawerToggle = qs('#studentDrawerToggle');
+  const drawerOverlay = qs('#studentDrawerOverlay');
+  const openDrawer = () => document.body.classList.add('student-drawer-open');
+  const closeDrawer = () => document.body.classList.remove('student-drawer-open');
+  const toggleDrawer = () => {
+    if (document.body.classList.contains('student-drawer-open')) closeDrawer();
+    else openDrawer();
+  };
+  if (drawerToggle) drawerToggle.addEventListener('click', toggleDrawer);
+  if (drawerOverlay) drawerOverlay.addEventListener('click', closeDrawer);
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 960) closeDrawer();
+  });
+
   const tabs = qsa('.student-tab', shell);
   const classSel = qs('#studentClass', shell);
   const sectionSel = qs('#studentSection', shell);
@@ -1651,6 +1665,7 @@ function setupStudentDashboard() {
     t.addEventListener('click', () => {
       setActiveTab(t.dataset.view);
       fetchItems();
+      if (window.innerWidth <= 960) closeDrawer();
     });
   });
 

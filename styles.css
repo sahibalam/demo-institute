@@ -1449,6 +1449,32 @@ textarea{resize:vertical}
   .notice-controls{grid-template-columns:1fr 1fr}
 }
 
+@media (max-width: 960px){
+  #studentDrawerToggle{display:inline-flex !important}
+  #studentDrawerOverlay{
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.55);
+    display:none;
+    z-index:260;
+  }
+  body.student-drawer-open #studentDrawerOverlay{display:block}
+
+  .student-sidebar{
+    position:fixed;
+    top:0;
+    left:0;
+    height:100vh;
+    width:280px;
+    max-width:86vw;
+    overflow:auto;
+    transform:translateX(-110%);
+    transition:transform 180ms ease;
+    z-index:261;
+  }
+  body.student-drawer-open .student-sidebar{transform:translateX(0)}
+}
+
 @media (max-width: 720px){
   .nav-toggle{display:flex}
   .nav{
