@@ -1451,6 +1451,16 @@ textarea{resize:vertical}
 
 @media (max-width: 960px){
   #studentDrawerToggle{display:inline-flex !important}
+  #studentDrawerToggle{
+    margin-left:auto;
+    width:40px !important;
+    min-width:40px;
+    height:40px;
+    padding:0 !important;
+    border-radius:12px;
+    font-size:18px;
+    line-height:1;
+  }
   #studentDrawerOverlay{
     position:fixed;
     inset:0;
@@ -1553,6 +1563,7 @@ textarea{resize:vertical}
   .testimonial-actions{flex-direction:column}
   .student-toolbar{align-items:stretch}
   .student-actions{width:100%}
+  #studentDrawerToggle{width:40px !important}
 }
 
 @media (max-width: 960px){
