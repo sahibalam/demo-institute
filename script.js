@@ -316,11 +316,61 @@ function setupForms() {
       }
     });
   }
+
+  if (admissionClassEl) {
+    admissionClassEl.addEventListener('change', () => {
+      syncAdmissionStreams();
+    });
+  }
 }
 
 function setupEnquireModal() {
   const dlg = qs('#enquireDialog');
   if (!dlg) return;
+
+  const fillSelect = (selectEl, values, { placeholder = 'Select' } = {}) => {
+    if (!selectEl) return;
+    const keep = selectEl.value;
+    selectEl.innerHTML = `<option value="">${placeholder}</option>`;
+    (Array.isArray(values) ? values : []).forEach((v) => {
+      const opt = document.createElement('option');
+      opt.value = String(v);
+      opt.textContent = String(v);
+      selectEl.appendChild(opt);
+    });
+    if (keep && values && values.includes(keep)) selectEl.value = keep;
+  };
+
+  const admissionClassEl = qs('[data-admission-class]', dlg);
+  const admissionStreamEl = qs('[data-admission-stream]', dlg);
+  let optionsCache = null;
+
+  const loadAdmissionOptions = async () => {
+    try {
+      const res = await fetch(API_BASE + '/admission/options');
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data && typeof data === 'object' ? data : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const syncAdmissionStreams = () => {
+    if (!optionsCache || !admissionStreamEl || !admissionClassEl) return;
+    const klass = String(admissionClassEl.value || '').trim();
+    const m = optionsCache.streamsByClass && typeof optionsCache.streamsByClass === 'object' ? optionsCache.streamsByClass : {};
+    const streams = Array.isArray(m[klass]) ? m[klass] : [];
+    fillSelect(admissionStreamEl, streams, { placeholder: 'Select' });
+  };
+
+  const ensureAdmissionOptions = async () => {
+    if (!admissionClassEl || !admissionStreamEl) return;
+    if (!optionsCache) optionsCache = await loadAdmissionOptions();
+    const classes = Array.isArray(optionsCache?.classes) ? optionsCache.classes : [];
+    fillSelect(admissionClassEl, classes, { placeholder: 'Select' });
+    syncAdmissionStreams();
+  };
 
   const resetPreview = () => {
     const box = qs('.admission-photo', dlg);
@@ -336,6 +386,7 @@ function setupEnquireModal() {
     const note = qs('#admissionNote');
     if (note) note.textContent = '';
     resetPreview();
+    ensureAdmissionOptions();
     if (typeof dlg.showModal === 'function') dlg.showModal();
   };
 
