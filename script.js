@@ -726,6 +726,14 @@ function setupLeadPopup() {
     }
   };
 
+  qsa('[data-lead-trigger]').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (note) note.textContent = '';
+      show();
+    });
+  });
+
   const timer = setTimeout(show, 4500);
 
   dlg.addEventListener('close', () => {
