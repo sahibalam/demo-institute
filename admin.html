@@ -501,6 +501,7 @@
                         <tr style="text-align:left">
                           <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">STUDENT-ID</th>
                           <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">JOINING DATE</th>
+                          <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">PHOTO</th>
                           <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">NAME</th>
                           <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">CLASS</th>
                           <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">STREAM</th>
@@ -1067,11 +1068,16 @@
         tbody.innerHTML = '';
 
         items.forEach((it) => {
+          const photo = String(it.photoBase64 || '');
+          const photoCell = photo
+            ? `<img src="${photo.replaceAll('"', '&quot;')}" alt="photo" style="width:42px; height:42px; object-fit:cover; border-radius:8px; border:1px solid rgba(15,23,42,.12)" />`
+            : `<span class="muted" style="font-size:12px">—</span>`;
           const tr = document.createElement('tr');
           tr.setAttribute('data-student-row', it.id);
           tr.innerHTML = `
             <td style="padding:10px; border-bottom:1px solid rgba(15,23,42,.08)"><input data-k="studentId" value="${String(it.studentId || '').replaceAll('"', '&quot;')}" style="width:150px" /></td>
             <td style="padding:10px; border-bottom:1px solid rgba(15,23,42,.08)"><input data-k="joiningDate" value="${String(it.joiningDate || '').slice(0, 10).replaceAll('"', '&quot;')}" style="width:130px" /></td>
+            <td style="padding:10px; border-bottom:1px solid rgba(15,23,42,.08)">${photoCell}</td>
             <td style="padding:10px; border-bottom:1px solid rgba(15,23,42,.08)"><input data-k="name" value="${String(it.name || '').replaceAll('"', '&quot;')}" style="width:200px" /></td>
             <td style="padding:10px; border-bottom:1px solid rgba(15,23,42,.08)"><input data-k="class" value="${String(it.class || '').replaceAll('"', '&quot;')}" style="width:90px" /></td>
             <td style="padding:10px; border-bottom:1px solid rgba(15,23,42,.08)"><input data-k="stream" value="${String(it.stream || '').replaceAll('"', '&quot;')}" style="width:140px" /></td>
