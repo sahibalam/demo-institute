@@ -31,6 +31,7 @@
                 <button class="btn btn-ghost" type="button" data-tab="timetables" id="tabTimetables">Time-table</button>
                 <button class="btn btn-ghost" type="button" data-tab="sessions" id="tabSessions">Session Management</button>
                 <button class="btn btn-ghost" type="button" data-tab="classmanagement" id="tabClassManagement">Class Management</button>
+                <button class="btn btn-ghost" type="button" data-tab="students" id="tabStudents">Student Management</button>
               </div>
 
               <div style="border-top:1px solid rgba(15,23,42,.12); padding-top:10px">
@@ -482,6 +483,36 @@
                     <p class="form-note" id="classesListNote" role="status" aria-live="polite"></p>
                   </div>
                   <div id="classesList" style="display:grid; gap:10px; margin-top:12px"></div>
+                </div>
+              </div>
+            </section>
+
+            <section id="panelStudents" data-panel="students" hidden>
+              <div class="cards" style="grid-template-columns:1fr;">
+                <div class="card">
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap">
+                    <h3 style="margin-top:0">Student Management</h3>
+                    <button id="studentsRefresh" class="btn btn-ghost" type="button">Refresh</button>
+                  </div>
+                  <p class="form-note" id="studentsNote" role="status" aria-live="polite"></p>
+                  <div style="overflow:auto; margin-top:10px">
+                    <table style="width:100%; border-collapse:collapse; min-width:980px">
+                      <thead>
+                        <tr style="text-align:left">
+                          <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">STUDENT-ID</th>
+                          <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">JOINING DATE</th>
+                          <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">NAME</th>
+                          <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">CLASS</th>
+                          <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">STREAM</th>
+                          <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">NUMBER</th>
+                          <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">ADDRESS</th>
+                          <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">STATUS</th>
+                          <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">ACTIONS</th>
+                        </tr>
+                      </thead>
+                      <tbody id="studentsTbody"></tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </section>
@@ -966,6 +997,7 @@
         const tabT = qs('#tabTimetables');
         const tabS = qs('#tabSessions');
         const tabCM = qs('#tabClassManagement');
+        const tabST = qs('#tabStudents');
         const pL = qs('#panelLectures');
         const pM = qs('#panelMaterials');
         const pY = qs('#panelYears');
@@ -974,6 +1006,7 @@
         const pT = qs('#panelTimetables');
         const pS = qs('#panelSessions');
         const pCM = qs('#panelClassManagement');
+        const pST = qs('#panelStudents');
         const subtitle = qs('#pageSubtitle');
 
         if (tabL) tabL.classList.toggle('btn-primary', a === 'lectures');
@@ -984,6 +1017,7 @@
         if (tabT) tabT.classList.toggle('btn-primary', a === 'timetables');
         if (tabS) tabS.classList.toggle('btn-primary', a === 'sessions');
         if (tabCM) tabCM.classList.toggle('btn-primary', a === 'classmanagement');
+        if (tabST) tabST.classList.toggle('btn-primary', a === 'students');
 
         if (pL) pL.hidden = a !== 'lectures';
         if (pM) pM.hidden = a !== 'materials';
@@ -993,6 +1027,7 @@
         if (pT) pT.hidden = a !== 'timetables';
         if (pS) pS.hidden = a !== 'sessions';
         if (pCM) pCM.hidden = a !== 'classmanagement';
+        if (pST) pST.hidden = a !== 'students';
 
         if (subtitle) {
           subtitle.textContent =
@@ -1010,6 +1045,8 @@
                         ? 'Manage academic sessions'
                       : a === 'classmanagement'
                         ? 'Manage classes and streams for the current session'
+                      : a === 'students'
+                        ? 'Manage students'
                   : 'Manage recorded lectures';
         }
 
@@ -1020,7 +1057,136 @@
         else if (a === 'timetables') loadTimetables({ force: true });
         else if (a === 'sessions') loadSessions({ force: true });
         else if (a === 'classmanagement') loadClasses({ force: true });
+        else if (a === 'students') loadStudents({ force: true });
         else loadList({ force: false });
+      }
+
+      function renderStudents(items) {
+        const tbody = qs('#studentsTbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        items.forEach((it) => {
+          const tr = document.createElement('tr');
+          tr.setAttribute('data-student-row', it.id);
+          tr.innerHTML = `
+            <td style="padding:10px; border-bottom:1px solid rgba(15,23,42,.08)"><input data-k="studentId" value="${String(it.studentId || '').replaceAll('"', '&quot;')}" style="width:150px" /></td>
+            <td style="padding:10px; border-bottom:1px solid rgba(15,23,42,.08)"><input data-k="joiningDate" value="${String(it.joiningDate || '').slice(0, 10).replaceAll('"', '&quot;')}" style="width:130px" /></td>
+            <td style="padding:10px; border-bottom:1px solid rgba(15,23,42,.08)"><input data-k="name" value="${String(it.name || '').replaceAll('"', '&quot;')}" style="width:200px" /></td>
+            <td style="padding:10px; border-bottom:1px solid rgba(15,23,42,.08)"><input data-k="class" value="${String(it.class || '').replaceAll('"', '&quot;')}" style="width:90px" /></td>
+            <td style="padding:10px; border-bottom:1px solid rgba(15,23,42,.08)"><input data-k="stream" value="${String(it.stream || '').replaceAll('"', '&quot;')}" style="width:140px" /></td>
+            <td style="padding:10px; border-bottom:1px solid rgba(15,23,42,.08)"><input data-k="number" value="${String(it.number || '').replaceAll('"', '&quot;')}" style="width:140px" /></td>
+            <td style="padding:10px; border-bottom:1px solid rgba(15,23,42,.08)"><input data-k="address" value="${String(it.address || '').replaceAll('"', '&quot;')}" style="width:260px" /></td>
+            <td style="padding:10px; border-bottom:1px solid rgba(15,23,42,.08)">
+              <select data-k="status" style="width:120px">
+                <option value="active" ${String(it.status || '').toLowerCase() === 'inactive' ? '' : 'selected'}>active</option>
+                <option value="inactive" ${String(it.status || '').toLowerCase() === 'inactive' ? 'selected' : ''}>inactive</option>
+              </select>
+            </td>
+            <td style="padding:10px; border-bottom:1px solid rgba(15,23,42,.08)">
+              <button class="btn btn-ghost" type="button" data-st-del="${it.id}">Delete</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        tbody.querySelectorAll('input[data-k], select[data-k]').forEach((el) => {
+          el.addEventListener('change', async () => {
+            const tr = el.closest('tr');
+            const id = tr?.getAttribute('data-student-row');
+            const key = el.getAttribute('data-k');
+            if (!id || !key) return;
+            const cfg2 = getCfg();
+            const note = qs('#studentsNote');
+
+            try {
+              if (note) note.textContent = 'Saving…';
+              const payload = { [key]: String(el.value || '').trim() };
+              const res = await fetch(apiUrl(cfg2, `/admin/students/${id}`), {
+                method: 'PATCH',
+                headers: {
+                  'content-type': 'application/json',
+                  Authorization: authHeader(cfg2),
+                },
+                body: JSON.stringify(payload),
+              });
+              if (!res.ok) {
+                const txt = await res.text();
+                if (note) note.textContent = `Save failed: ${res.status} ${txt}`;
+                return;
+              }
+              if (note) note.textContent = 'Saved.';
+            } catch (e) {
+              if (note) note.textContent = e?.message || 'Save failed.';
+            }
+          });
+        });
+
+        tbody.querySelectorAll('[data-st-del]').forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            const id = btn.getAttribute('data-st-del');
+            if (!id) return;
+            if (!confirm('Delete this student?')) return;
+
+            const cfg2 = getCfg();
+            const note = qs('#studentsNote');
+            try {
+              if (note) note.textContent = 'Deleting…';
+              const res = await fetch(apiUrl(cfg2, `/admin/students/${id}`), {
+                method: 'DELETE',
+                headers: {
+                  Authorization: authHeader(cfg2),
+                },
+              });
+              if (!res.ok) {
+                const txt = await res.text();
+                if (note) note.textContent = `Delete failed: ${res.status} ${txt}`;
+                return;
+              }
+              if (note) note.textContent = 'Deleted.';
+              await loadStudents({ force: true });
+            } catch (e) {
+              if (note) note.textContent = e?.message || 'Delete failed.';
+            }
+          });
+        });
+      }
+
+      async function loadStudents({ force = false } = {}) {
+        const cfg = getCfg();
+        const note = qs('#studentsNote');
+
+        if (!cfg.apiBase) {
+          if (note) note.textContent = 'Set API base URL first.';
+          return;
+        }
+
+        if (!force && Array.isArray(window.__studentsCache)) {
+          renderStudents(window.__studentsCache);
+          if (note) note.textContent = `Loaded ${window.__studentsCache.length} students.`;
+          return;
+        }
+
+        if (note) note.textContent = 'Loading…';
+        renderStudents([]);
+
+        const res = await fetch(apiUrl(cfg, '/admin/students'), {
+          headers: {
+            Authorization: authHeader(cfg),
+          },
+        });
+
+        if (!res.ok) {
+          const txt = await res.text();
+          if (note) note.textContent = `Failed: ${res.status} ${txt}`;
+          return;
+        }
+
+        const data = await res.json();
+        const items = Array.isArray(data?.items) ? data.items : [];
+        window.__studentsCache = items;
+        renderStudents(items);
+        if (note) note.textContent = `Loaded ${items.length} students.`;
       }
 
       function renderAnnouncements(items) {
@@ -1742,6 +1908,7 @@
         qs('#tabTimetables').addEventListener('click', () => setActiveTab('timetables'));
         qs('#tabSessions').addEventListener('click', () => setActiveTab('sessions'));
         qs('#tabClassManagement').addEventListener('click', () => setActiveTab('classmanagement'));
+        qs('#tabStudents').addEventListener('click', () => setActiveTab('students'));
 
         loadSessions({ force: false });
 
@@ -1810,6 +1977,9 @@
 
         const sessionsRefreshBtn = qs('#sessionsRefresh');
         if (sessionsRefreshBtn) sessionsRefreshBtn.addEventListener('click', () => loadSessions({ force: true }));
+
+        const studentsRefreshBtn = qs('#studentsRefresh');
+        if (studentsRefreshBtn) studentsRefreshBtn.addEventListener('click', () => loadStudents({ force: true }));
 
         const currentSessionSelect = qs('#currentSessionSelect');
         if (currentSessionSelect) {
