@@ -316,12 +316,6 @@ function setupForms() {
       }
     });
   }
-
-  if (admissionClassEl) {
-    admissionClassEl.addEventListener('change', () => {
-      syncAdmissionStreams();
-    });
-  }
 }
 
 function setupEnquireModal() {
@@ -363,6 +357,12 @@ function setupEnquireModal() {
     const streams = Array.isArray(m[klass]) ? m[klass] : [];
     fillSelect(admissionStreamEl, streams, { placeholder: 'Select' });
   };
+
+  if (admissionClassEl) {
+    admissionClassEl.addEventListener('change', () => {
+      syncAdmissionStreams();
+    });
+  }
 
   const ensureAdmissionOptions = async () => {
     if (!admissionClassEl || !admissionStreamEl) return;
