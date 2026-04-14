@@ -541,6 +541,22 @@
                     <h3 style="margin-top:0">Student Management</h3>
                     <button id="studentsRefresh" class="btn btn-ghost" type="button">Refresh</button>
                   </div>
+                  <div class="form" style="padding:0; margin-top:8px">
+                    <div class="admin-filters" style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; max-width:520px">
+                      <label style="margin:0">
+                        <span>Class</span>
+                        <select id="studentsFilterClass">
+                          <option value="">All</option>
+                        </select>
+                      </label>
+                      <label style="margin:0">
+                        <span>Stream</span>
+                        <select id="studentsFilterStream">
+                          <option value="">All</option>
+                        </select>
+                      </label>
+                    </div>
+                  </div>
                   <p class="form-note" id="studentsNote" role="status" aria-live="polite"></p>
                   <div style="width:100%; max-width:100%; min-width:0; overflow-x:auto; overflow-y:hidden; margin-top:10px; -webkit-overflow-scrolling:touch">
                     <table style="width:max-content; border-collapse:collapse; min-width:980px">
@@ -640,6 +656,38 @@
         });
         renderTimetables(filtered);
         return filtered;
+      }
+
+      function applyStudentsFilters() {
+        const all = Array.isArray(window.__studentsCache) ? window.__studentsCache : [];
+        const fc = qs('#studentsFilterClass')?.value || '';
+        const fs = qs('#studentsFilterStream')?.value || '';
+        const filtered = all.filter((x) => {
+          if (fc && String(x.class || '') !== fc) return false;
+          if (fs && String(x.stream || '') !== fs) return false;
+          return true;
+        });
+        renderStudents(filtered);
+        return filtered;
+      }
+
+      function updateStudentsStreamFilterOptions() {
+        const all = Array.isArray(window.__studentsCache) ? window.__studentsCache : [];
+        const classVal = qs('#studentsFilterClass')?.value || '';
+        const streamEl = qs('#studentsFilterStream');
+        const prev = streamEl?.value || '';
+
+        const streams = uniqSorted(
+          all
+            .filter((x) => (!classVal ? true : String(x.class || '') === classVal))
+            .map((x) => x.stream)
+            .filter(Boolean)
+        );
+
+        setSelectOptions(streamEl, streams, { placeholder: 'All' });
+        if (streamEl) {
+          streamEl.value = prev && streams.includes(prev) ? prev : '';
+        }
       }
 
       function renderChapters(items) {
@@ -1269,7 +1317,9 @@
         }
 
         if (!force && Array.isArray(window.__studentsCache)) {
-          renderStudents(window.__studentsCache);
+          setSelectOptions(qs('#studentsFilterClass'), uniqSorted(window.__studentsCache.map((x) => x.class).filter(Boolean)), { placeholder: 'All' });
+          updateStudentsStreamFilterOptions();
+          applyStudentsFilters();
           if (note) note.textContent = `Loaded ${window.__studentsCache.length} students.`;
           return;
         }
@@ -1292,7 +1342,9 @@
         const data = await res.json();
         const items = Array.isArray(data?.items) ? data.items : [];
         window.__studentsCache = items;
-        renderStudents(items);
+        setSelectOptions(qs('#studentsFilterClass'), uniqSorted(items.map((x) => x.class).filter(Boolean)), { placeholder: 'All' });
+        updateStudentsStreamFilterOptions();
+        applyStudentsFilters();
         if (note) note.textContent = `Loaded ${items.length} students.`;
       }
 
@@ -2062,6 +2114,18 @@
           const el = qs(id);
           if (el) el.addEventListener('change', applyTimetablesFilters);
         });
+
+        const stFilterClass = qs('#studentsFilterClass');
+        const stFilterStream = qs('#studentsFilterStream');
+        if (stFilterClass) {
+          stFilterClass.addEventListener('change', () => {
+            updateStudentsStreamFilterOptions();
+            applyStudentsFilters();
+          });
+        }
+        if (stFilterStream) {
+          stFilterStream.addEventListener('change', applyStudentsFilters);
+        }
 
         qs('#createForm').addEventListener('submit', async (e) => {
           e.preventDefault();
