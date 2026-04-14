@@ -489,14 +489,14 @@
 
             <section id="panelStudents" data-panel="students" hidden>
               <div class="cards" style="grid-template-columns:1fr;">
-                <div class="card">
+                <div class="card" style="min-width:0">
                   <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap">
                     <h3 style="margin-top:0">Student Management</h3>
                     <button id="studentsRefresh" class="btn btn-ghost" type="button">Refresh</button>
                   </div>
                   <p class="form-note" id="studentsNote" role="status" aria-live="polite"></p>
-                  <div style="max-width:100%; overflow-x:auto; overflow-y:hidden; margin-top:10px; -webkit-overflow-scrolling:touch">
-                    <table style="width:100%; border-collapse:collapse; min-width:980px">
+                  <div style="width:100%; max-width:100%; min-width:0; overflow-x:auto; overflow-y:hidden; margin-top:10px; -webkit-overflow-scrolling:touch">
+                    <table style="width:max-content; border-collapse:collapse; min-width:980px">
                       <thead>
                         <tr style="text-align:left">
                           <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">STUDENT-ID</th>
