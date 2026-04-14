@@ -10,8 +10,52 @@
     <link rel="icon" href="favicon.ico" sizes="any" />
     <link rel="manifest" href="site.webmanifest" />
     <link rel="apple-touch-icon" href="web-app-manifest-192x192.png" />
+    <style>
+      @media (max-width: 900px) {
+        .admin-shell {
+          grid-template-columns: minmax(0, 1fr) !important;
+        }
+        .admin-aside {
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          height: 100vh !important;
+          width: 280px !important;
+          max-width: 86vw !important;
+          transform: translateX(-110%);
+          transition: transform 180ms ease;
+          z-index: 10001;
+          overflow: auto;
+        }
+        body.drawer-open .admin-aside {
+          transform: translateX(0);
+        }
+        #drawerOverlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(15, 23, 42, 0.55);
+          display: none;
+          z-index: 10000;
+        }
+        body.drawer-open #drawerOverlay {
+          display: block;
+        }
+        #drawerToggle {
+          display: inline-flex !important;
+        }
+      }
+      @media (min-width: 901px) {
+        #drawerOverlay {
+          display: none !important;
+        }
+        #drawerToggle {
+          display: none !important;
+        }
+      }
+    </style>
   </head>
   <body>
+    <div id="drawerOverlay" aria-hidden="true"></div>
     <main class="section" style="padding-top:24px">
       <div class="container" style="max-width:1100px">
         <div class="admin-shell" style="display:grid; grid-template-columns:240px minmax(0, 1fr); gap:14px; align-items:start">
@@ -42,7 +86,10 @@
 
           <section>
             <div class="section-head" style="margin-bottom:14px">
-              <h2 style="margin-bottom:2px">Admin <span class="offerings-accent">Dashboard</span></h2>
+              <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
+                <button id="drawerToggle" class="btn btn-ghost" type="button" aria-label="Menu" style="display:none">☰</button>
+                <h2 style="margin-bottom:2px">Admin <span class="offerings-accent">Dashboard</span></h2>
+              </div>
               <p id="pageSubtitle">Manage recorded lectures</p>
             </div>
 
@@ -1937,6 +1984,20 @@
         if (qs('#apiBase')) qs('#apiBase').value = base;
         if (!cfg.apiBase) setCfg({ ...cfg, apiBase: base });
 
+        const drawerToggle = qs('#drawerToggle');
+        const drawerOverlay = qs('#drawerOverlay');
+        const openDrawer = () => document.body.classList.add('drawer-open');
+        const closeDrawer = () => document.body.classList.remove('drawer-open');
+        const toggleDrawer = () => {
+          if (document.body.classList.contains('drawer-open')) closeDrawer();
+          else openDrawer();
+        };
+        if (drawerToggle) drawerToggle.addEventListener('click', toggleDrawer);
+        if (drawerOverlay) drawerOverlay.addEventListener('click', closeDrawer);
+        window.addEventListener('resize', () => {
+          if (window.innerWidth >= 901) closeDrawer();
+        });
+
         if (!cfg.user || !cfg.pass) {
           qs('#note').textContent = 'Not logged in. Go back and open Dashboard again.';
         }
@@ -1960,15 +2021,20 @@
           window.location.href = 'index.html';
         });
 
-        qs('#tabLectures').addEventListener('click', () => setActiveTab('lectures'));
-        qs('#tabMaterials').addEventListener('click', () => setActiveTab('materials'));
-        qs('#tabYears').addEventListener('click', () => setActiveTab('yearspapers'));
-        qs('#tabChapters').addEventListener('click', () => setActiveTab('chaptersolutions'));
-        qs('#tabAnnouncements').addEventListener('click', () => setActiveTab('announcements'));
-        qs('#tabTimetables').addEventListener('click', () => setActiveTab('timetables'));
-        qs('#tabSessions').addEventListener('click', () => setActiveTab('sessions'));
-        qs('#tabClassManagement').addEventListener('click', () => setActiveTab('classmanagement'));
-        qs('#tabStudents').addEventListener('click', () => setActiveTab('students'));
+        const onTab = (name) => {
+          setActiveTab(name);
+          if (window.innerWidth <= 900) closeDrawer();
+        };
+
+        qs('#tabLectures').addEventListener('click', () => onTab('lectures'));
+        qs('#tabMaterials').addEventListener('click', () => onTab('materials'));
+        qs('#tabYears').addEventListener('click', () => onTab('yearspapers'));
+        qs('#tabChapters').addEventListener('click', () => onTab('chaptersolutions'));
+        qs('#tabAnnouncements').addEventListener('click', () => onTab('announcements'));
+        qs('#tabTimetables').addEventListener('click', () => onTab('timetables'));
+        qs('#tabSessions').addEventListener('click', () => onTab('sessions'));
+        qs('#tabClassManagement').addEventListener('click', () => onTab('classmanagement'));
+        qs('#tabStudents').addEventListener('click', () => onTab('students'));
 
         loadSessions({ force: false });
 
