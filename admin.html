@@ -42,6 +42,14 @@
         }
         #drawerToggle {
           display: inline-flex !important;
+          margin-left: auto;
+          width: 40px !important;
+          min-width: 40px;
+          height: 40px;
+          padding: 0 !important;
+          border-radius: 12px;
+          font-size: 18px;
+          line-height: 1;
         }
       }
       @media (min-width: 901px) {
@@ -87,8 +95,8 @@
           <section>
             <div class="section-head" style="margin-bottom:14px">
               <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
-                <button id="drawerToggle" class="btn btn-ghost" type="button" aria-label="Menu" style="display:none">☰</button>
                 <h2 style="margin-bottom:2px">Admin <span class="offerings-accent">Dashboard</span></h2>
+                <button id="drawerToggle" class="btn btn-ghost" type="button" aria-label="Menu" style="display:none">☰</button>
               </div>
               <p id="pageSubtitle">Manage recorded lectures</p>
             </div>
