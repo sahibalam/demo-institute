@@ -771,9 +771,32 @@ function setupLeadPopup() {
     if (typeof dlg.showModal === 'function') {
       try {
         dlg.showModal();
+        return;
       } catch {
         // ignore
       }
+    }
+
+    try {
+      dlg.setAttribute('open', '');
+    } catch {
+      // ignore
+    }
+  };
+
+  const closeDialog = (val = 'cancel') => {
+    if (typeof dlg.close === 'function') {
+      try {
+        dlg.close(val);
+        return;
+      } catch {
+        // ignore
+      }
+    }
+    try {
+      dlg.removeAttribute('open');
+    } catch {
+      // ignore
     }
   };
 
@@ -802,7 +825,7 @@ function setupLeadPopup() {
       localStorage.setItem(key, 'dismissed');
       if (note) note.textContent = '';
       try {
-        dlg.close('cancel');
+        closeDialog('cancel');
       } catch {
         // ignore
       }
@@ -817,7 +840,7 @@ function setupLeadPopup() {
       localStorage.setItem(key, 'dismissed');
       if (note) note.textContent = '';
       try {
-        dlg.close('cancel');
+        closeDialog('cancel');
       } catch {
         // ignore
       }
@@ -853,7 +876,7 @@ function setupLeadPopup() {
       if (note) note.textContent = 'Submitted. We will call you soon.';
       setTimeout(() => {
         try {
-          dlg.close('ok');
+          closeDialog('ok');
         } catch {
           // ignore
         }
