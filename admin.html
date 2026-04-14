@@ -29,6 +29,7 @@
                 <button class="btn btn-ghost" type="button" data-tab="chaptersolutions" id="tabChapters">Chapters Solution</button>
                 <button class="btn btn-ghost" type="button" data-tab="announcements" id="tabAnnouncements">Announcement</button>
                 <button class="btn btn-ghost" type="button" data-tab="timetables" id="tabTimetables">Time-table</button>
+                <button class="btn btn-ghost" type="button" data-tab="sessions" id="tabSessions">Session Management</button>
                 <button class="btn btn-ghost" type="button" data-tab="classmanagement" id="tabClassManagement">Class Management</button>
               </div>
 
@@ -42,6 +43,18 @@
             <div class="section-head" style="margin-bottom:14px">
               <h2 style="margin-bottom:2px">Admin <span class="offerings-accent">Dashboard</span></h2>
               <p id="pageSubtitle">Manage recorded lectures</p>
+            </div>
+
+            <div class="card" id="currentSessionCard" style="margin-bottom:14px" hidden>
+              <div class="form" style="padding:0; max-width:680px">
+                <label style="margin:0">
+                  <span>Current Session</span>
+                  <select id="currentSessionSelect">
+                    <option value="">Select</option>
+                  </select>
+                </label>
+                <p class="form-note" id="currentSessionNote" role="status" aria-live="polite"></p>
+              </div>
             </div>
 
             <div class="card admin-api-settings" style="margin-bottom:14px" hidden>
@@ -120,6 +133,33 @@
                     </div>
                   </div>
                   <div id="list" style="display:grid; gap:10px; margin-top:12px"></div>
+                </div>
+              </div>
+            </section>
+
+            <section id="panelSessions" data-panel="sessions" hidden>
+              <div class="cards" style="grid-template-columns:1fr;">
+                <div class="card">
+                  <h3 style="margin-top:0">Create Session</h3>
+                  <form id="sessionForm" class="form" style="padding:0; max-width:680px">
+                    <label>
+                      <span>Session</span>
+                      <input name="name" required placeholder="2025-26" />
+                    </label>
+                    <button class="btn btn-primary" type="submit">Save</button>
+                    <p class="form-note" id="sessionNote" role="status" aria-live="polite"></p>
+                  </form>
+                </div>
+
+                <div class="card">
+                  <h3 style="margin-top:0">Saved Sessions</h3>
+                  <div class="form" style="padding:0">
+                    <div style="display:flex; gap:10px; flex-wrap:wrap">
+                      <button id="sessionsRefresh" class="btn btn-ghost" type="button">Refresh</button>
+                    </div>
+                    <p class="form-note" id="sessionsListNote" role="status" aria-live="polite"></p>
+                  </div>
+                  <div id="sessionsList" style="display:grid; gap:10px; margin-top:12px"></div>
                 </div>
               </div>
             </section>
@@ -420,10 +460,6 @@
                 <div class="card">
                   <h3 style="margin-top:0">Class Management</h3>
                   <form id="classManagementForm" class="form" style="padding:0; max-width:680px">
-                    <label>
-                      <span>Session</span>
-                      <input name="session" required placeholder="2025-26" />
-                    </label>
                     <label>
                       <span>Class</span>
                       <input name="class" required placeholder="10 / 11 / 12" />
@@ -928,6 +964,7 @@
         const tabC = qs('#tabChapters');
         const tabA = qs('#tabAnnouncements');
         const tabT = qs('#tabTimetables');
+        const tabS = qs('#tabSessions');
         const tabCM = qs('#tabClassManagement');
         const pL = qs('#panelLectures');
         const pM = qs('#panelMaterials');
@@ -935,6 +972,7 @@
         const pC = qs('#panelChapters');
         const pA = qs('#panelAnnouncements');
         const pT = qs('#panelTimetables');
+        const pS = qs('#panelSessions');
         const pCM = qs('#panelClassManagement');
         const subtitle = qs('#pageSubtitle');
 
@@ -944,6 +982,7 @@
         if (tabC) tabC.classList.toggle('btn-primary', a === 'chaptersolutions');
         if (tabA) tabA.classList.toggle('btn-primary', a === 'announcements');
         if (tabT) tabT.classList.toggle('btn-primary', a === 'timetables');
+        if (tabS) tabS.classList.toggle('btn-primary', a === 'sessions');
         if (tabCM) tabCM.classList.toggle('btn-primary', a === 'classmanagement');
 
         if (pL) pL.hidden = a !== 'lectures';
@@ -952,6 +991,7 @@
         if (pC) pC.hidden = a !== 'chaptersolutions';
         if (pA) pA.hidden = a !== 'announcements';
         if (pT) pT.hidden = a !== 'timetables';
+        if (pS) pS.hidden = a !== 'sessions';
         if (pCM) pCM.hidden = a !== 'classmanagement';
 
         if (subtitle) {
@@ -966,8 +1006,10 @@
                     ? 'Create and manage announcements'
                     : a === 'timetables'
                       ? 'Upload and manage time-tables'
+                      : a === 'sessions'
+                        ? 'Manage academic sessions'
                       : a === 'classmanagement'
-                        ? 'Manage sessions, classes, and streams'
+                        ? 'Manage classes and streams for the current session'
                   : 'Manage recorded lectures';
         }
 
@@ -976,6 +1018,7 @@
         else if (a === 'chaptersolutions') loadChapters({ force: true });
         else if (a === 'announcements') loadAnnouncements({ force: true });
         else if (a === 'timetables') loadTimetables({ force: true });
+        else if (a === 'sessions') loadSessions({ force: true });
         else if (a === 'classmanagement') loadClasses({ force: true });
         else loadList({ force: false });
       }
@@ -1121,9 +1164,16 @@
       async function loadClasses({ force = false } = {}) {
         const cfg = getCfg();
         const note = qs('#classesListNote');
+        const session = String(getCurrentSession() || '');
 
         if (!cfg.apiBase) {
           if (note) note.textContent = 'Set API base URL first.';
+          return;
+        }
+
+        if (!session) {
+          if (note) note.textContent = 'Select current session first.';
+          renderClasses([]);
           return;
         }
 
@@ -1136,7 +1186,7 @@
         if (note) note.textContent = 'Loading…';
         renderClasses([]);
 
-        const res = await fetch(apiUrl(cfg, '/admin/classes'), {
+        const res = await fetch(apiUrl(cfg, `/admin/classes?session=${encodeURIComponent(session)}`), {
           headers: {
             Authorization: authHeader(cfg),
           },
@@ -1185,11 +1235,14 @@
         const cfg = getCfg();
         if (!cfg.apiBase || !cfg.user || !cfg.pass) return;
 
+        const session = String(getCurrentSession() || '');
+        if (!session) return null;
+
         if (!force && window.__classOptions && typeof window.__classOptions === 'object') {
           return window.__classOptions;
         }
 
-        const res = await fetch(apiUrl(cfg, '/admin/classes'), {
+        const res = await fetch(apiUrl(cfg, `/admin/classes?session=${encodeURIComponent(session)}`), {
           headers: {
             Authorization: authHeader(cfg),
           },
@@ -1218,6 +1271,139 @@
         document.querySelectorAll('[data-stream-select]').forEach((sel) => {
           setFormSelectOptions(sel, options.streams);
         });
+      }
+
+      function getCurrentSession() {
+        return localStorage.getItem('optimum_admin_session_v1') || '';
+      }
+
+      function setCurrentSession(name) {
+        localStorage.setItem('optimum_admin_session_v1', String(name || ''));
+      }
+
+      function renderSessions(items) {
+        const list = qs('#sessionsList');
+        if (!list) return;
+        list.innerHTML = '';
+
+        items.forEach((item) => {
+          const row = document.createElement('div');
+          row.className = 'info-item';
+          row.style.gridTemplateColumns = '1fr auto';
+          row.innerHTML = `
+            <div>
+              <div style="font-weight:900">${String(item.name || '').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}</div>
+              <div class="muted" style="font-size:12px; margin-top:4px">${item.createdAt || ''}</div>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; justify-content:flex-end">
+              <button class="btn btn-ghost" type="button" data-sdel="${item.id}">Delete</button>
+            </div>
+          `;
+          list.appendChild(row);
+        });
+
+        list.querySelectorAll('[data-sdel]').forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            const id = btn.getAttribute('data-sdel');
+            if (!id) return;
+            if (!confirm('Delete this session?')) return;
+
+            const cfg2 = getCfg();
+            const note = qs('#sessionsListNote');
+            try {
+              if (note) note.textContent = 'Deleting…';
+              const res = await fetch(apiUrl(cfg2, `/admin/sessions/${id}`), {
+                method: 'DELETE',
+                headers: {
+                  Authorization: authHeader(cfg2),
+                },
+              });
+
+              if (!res.ok) {
+                const txt = await res.text();
+                if (note) note.textContent = `Delete failed: ${res.status} ${txt}`;
+                return;
+              }
+
+              if (note) note.textContent = 'Deleted.';
+              await loadSessions({ force: true });
+            } catch (e) {
+              if (note) note.textContent = e?.message || 'Delete failed.';
+            }
+          });
+        });
+      }
+
+      async function loadSessions({ force = false } = {}) {
+        const cfg = getCfg();
+        const note = qs('#sessionsListNote');
+
+        if (!cfg.apiBase) {
+          if (note) note.textContent = 'Set API base URL first.';
+          return;
+        }
+
+        if (!force && Array.isArray(window.__sessionsCache)) {
+          renderSessions(window.__sessionsCache);
+          syncSessionSelector(window.__sessionsCache);
+          if (note) note.textContent = `Loaded ${window.__sessionsCache.length} sessions.`;
+          return;
+        }
+
+        if (note) note.textContent = 'Loading…';
+        renderSessions([]);
+
+        const res = await fetch(apiUrl(cfg, '/admin/sessions'), {
+          headers: {
+            Authorization: authHeader(cfg),
+          },
+        });
+
+        if (!res.ok) {
+          const txt = await res.text();
+          if (note) note.textContent = `Failed: ${res.status} ${txt}`;
+          return;
+        }
+
+        const data = await res.json();
+        const items = Array.isArray(data?.items) ? data.items : [];
+        window.__sessionsCache = items;
+        renderSessions(items);
+        syncSessionSelector(items);
+        if (note) note.textContent = `Loaded ${items.length} sessions.`;
+      }
+
+      function syncSessionSelector(items) {
+        const card = qs('#currentSessionCard');
+        const select = qs('#currentSessionSelect');
+        const note = qs('#currentSessionNote');
+
+        if (!card || !select) return;
+        card.hidden = false;
+
+        const names = uniqSorted((Array.isArray(items) ? items : []).map((x) => x.name));
+        setFormSelectOptions(select, names);
+
+        const current = getCurrentSession();
+        if (current && names.includes(current)) {
+          select.value = current;
+          if (note) note.textContent = '';
+        } else {
+          if (names.length) {
+            setCurrentSession(names[0]);
+            select.value = names[0];
+            if (note) note.textContent = 'Defaulted to latest session.';
+          } else {
+            setCurrentSession('');
+            select.value = '';
+            if (note) note.textContent = 'No sessions created yet.';
+          }
+        }
+
+        window.__classesCache = null;
+        window.__classOptions = null;
+        applyClassOptionsToForms({ force: true });
+        loadClasses({ force: true });
       }
 
       const MAX_PDF_BYTES = 250 * 1024 * 1024;
@@ -1554,9 +1740,10 @@
         qs('#tabChapters').addEventListener('click', () => setActiveTab('chaptersolutions'));
         qs('#tabAnnouncements').addEventListener('click', () => setActiveTab('announcements'));
         qs('#tabTimetables').addEventListener('click', () => setActiveTab('timetables'));
+        qs('#tabSessions').addEventListener('click', () => setActiveTab('sessions'));
         qs('#tabClassManagement').addEventListener('click', () => setActiveTab('classmanagement'));
 
-        applyClassOptionsToForms({ force: true });
+        loadSessions({ force: false });
 
         qs('#refresh').addEventListener('click', () => loadList({ force: true }));
 
@@ -1621,13 +1808,27 @@
         const classesRefreshBtn = qs('#classesRefresh');
         if (classesRefreshBtn) classesRefreshBtn.addEventListener('click', () => loadClasses({ force: true }));
 
-        const classForm = qs('#classManagementForm');
-        if (classForm) {
-          classForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        const sessionsRefreshBtn = qs('#sessionsRefresh');
+        if (sessionsRefreshBtn) sessionsRefreshBtn.addEventListener('click', () => loadSessions({ force: true }));
 
+        const currentSessionSelect = qs('#currentSessionSelect');
+        if (currentSessionSelect) {
+          currentSessionSelect.addEventListener('change', async () => {
+            const v = String(currentSessionSelect.value || '').trim();
+            setCurrentSession(v);
+            window.__classesCache = null;
+            window.__classOptions = null;
+            await applyClassOptionsToForms({ force: true });
+            await loadClasses({ force: true });
+          });
+        }
+
+        const sessionForm = qs('#sessionForm');
+        if (sessionForm) {
+          sessionForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
             const cfg2 = getCfg();
-            const note = qs('#classManagementNote');
+            const note = qs('#sessionNote');
 
             if (!cfg2.apiBase) {
               if (note) note.textContent = 'Set API base URL first.';
@@ -1636,7 +1837,62 @@
 
             const fd = new FormData(e.target);
             const payload = {
-              session: String(fd.get('session') || '').trim(),
+              name: String(fd.get('name') || '').trim(),
+            };
+
+            try {
+              if (note) note.textContent = 'Saving…';
+              const res = await fetch(apiUrl(cfg2, '/admin/sessions'), {
+                method: 'POST',
+                headers: {
+                  'content-type': 'application/json',
+                  Authorization: authHeader(cfg2),
+                },
+                body: JSON.stringify(payload),
+              });
+
+              if (!res.ok) {
+                const txt = await res.text();
+                if (note) note.textContent = `Save failed: ${res.status} ${txt}`;
+                return;
+              }
+
+              if (note) note.textContent = 'Saved.';
+              e.target.reset();
+              window.__sessionsCache = null;
+              await loadSessions({ force: true });
+              window.__classesCache = null;
+              window.__classOptions = null;
+              await applyClassOptionsToForms({ force: true });
+              await loadClasses({ force: true });
+            } catch (err) {
+              if (note) note.textContent = err?.message || 'Save failed.';
+            }
+          });
+        }
+
+        const classForm = qs('#classManagementForm');
+        if (classForm) {
+          classForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const cfg2 = getCfg();
+            const note = qs('#classManagementNote');
+            const session = String(getCurrentSession() || '');
+
+            if (!cfg2.apiBase) {
+              if (note) note.textContent = 'Set API base URL first.';
+              return;
+            }
+
+            if (!session) {
+              if (note) note.textContent = 'Select current session first.';
+              return;
+            }
+
+            const fd = new FormData(e.target);
+            const payload = {
+              session,
               class: String(fd.get('class') || '').trim(),
               stream: String(fd.get('stream') || '').trim(),
             };
