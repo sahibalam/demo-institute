@@ -29,6 +29,7 @@
                 <button class="btn btn-ghost" type="button" data-tab="chaptersolutions" id="tabChapters">Chapters Solution</button>
                 <button class="btn btn-ghost" type="button" data-tab="announcements" id="tabAnnouncements">Announcement</button>
                 <button class="btn btn-ghost" type="button" data-tab="timetables" id="tabTimetables">Time-table</button>
+                <button class="btn btn-ghost" type="button" data-tab="classmanagement" id="tabClassManagement">Class Management</button>
               </div>
 
               <div style="border-top:1px solid rgba(15,23,42,.12); padding-top:10px">
@@ -67,11 +68,15 @@
                   <form id="createForm" class="form" style="padding:0; max-width:680px">
                     <label>
                       <span>Class</span>
-                      <input name="class" required placeholder="10 / 11 / 12" />
+                      <select name="class" required data-class-select>
+                        <option value="">Select</option>
+                      </select>
                     </label>
                     <label>
-                      <span>Section</span>
-                      <input name="section" required placeholder="A" />
+                      <span>Stream</span>
+                      <select name="section" required data-stream-select>
+                        <option value="">Select</option>
+                      </select>
                     </label>
                     <label>
                       <span>Subject</span>
@@ -127,11 +132,15 @@
                     <input type="hidden" name="category" value="materials" />
                     <label>
                       <span>Class</span>
-                      <input name="class" required placeholder="10 / 11 / 12pass" />
+                      <select name="class" required data-class-select>
+                        <option value="">Select</option>
+                      </select>
                     </label>
                     <label>
-                      <span>Section</span>
-                      <input name="section" required placeholder="A" />
+                      <span>Stream</span>
+                      <select name="section" required data-stream-select>
+                        <option value="">Select</option>
+                      </select>
                     </label>
                     <label>
                       <span>Subject</span>
@@ -188,11 +197,15 @@
                     <input type="hidden" name="category" value="yearspapers" />
                     <label>
                       <span>Class</span>
-                      <input name="class" required placeholder="10 / 11 / 12pass" />
+                      <select name="class" required data-class-select>
+                        <option value="">Select</option>
+                      </select>
                     </label>
                     <label>
-                      <span>Section</span>
-                      <input name="section" required placeholder="A" />
+                      <span>Stream</span>
+                      <select name="section" required data-stream-select>
+                        <option value="">Select</option>
+                      </select>
                     </label>
                     <label>
                       <span>Subject</span>
@@ -259,11 +272,15 @@
                     <input type="hidden" name="category" value="chaptersolutions" />
                     <label>
                       <span>Class</span>
-                      <input name="class" required placeholder="10 / 11 / 12pass" />
+                      <select name="class" required data-class-select>
+                        <option value="">Select</option>
+                      </select>
                     </label>
                     <label>
-                      <span>Section</span>
-                      <input name="section" required placeholder="A" />
+                      <span>Stream</span>
+                      <select name="section" required data-stream-select>
+                        <option value="">Select</option>
+                      </select>
                     </label>
                     <label>
                       <span>Subject</span>
@@ -329,11 +346,15 @@
                   <form id="announcementForm" class="form" style="padding:0; max-width:680px">
                     <label>
                       <span>Class</span>
-                      <input name="class" required placeholder="10 / 11 / 12pass" />
+                      <select name="class" required data-class-select>
+                        <option value="">Select</option>
+                      </select>
                     </label>
                     <label>
-                      <span>Section</span>
-                      <input name="section" required placeholder="A" />
+                      <span>Stream</span>
+                      <select name="section" required data-stream-select>
+                        <option value="">Select</option>
+                      </select>
                     </label>
                     <label>
                       <span>Announcement</span>
@@ -363,11 +384,15 @@
                   <form id="timetableForm" class="form" style="padding:0; max-width:680px">
                     <label>
                       <span>Class</span>
-                      <input name="class" required placeholder="10 / 11 / 12pass" />
+                      <select name="class" required data-class-select>
+                        <option value="">Select</option>
+                      </select>
                     </label>
                     <label>
-                      <span>Section</span>
-                      <input name="section" required placeholder="A" />
+                      <span>Stream</span>
+                      <select name="section" required data-stream-select>
+                        <option value="">Select</option>
+                      </select>
                     </label>
                     <label>
                       <span>PDF File</span>
@@ -386,6 +411,41 @@
                     </div>
                   </div>
                   <div id="timetablesList" style="display:grid; gap:10px; margin-top:12px"></div>
+                </div>
+              </div>
+            </section>
+
+            <section id="panelClassManagement" data-panel="classmanagement" hidden>
+              <div class="cards" style="grid-template-columns:1fr;">
+                <div class="card">
+                  <h3 style="margin-top:0">Class Management</h3>
+                  <form id="classManagementForm" class="form" style="padding:0; max-width:680px">
+                    <label>
+                      <span>Session</span>
+                      <input name="session" required placeholder="2025-26" />
+                    </label>
+                    <label>
+                      <span>Class</span>
+                      <input name="class" required placeholder="10 / 11 / 12" />
+                    </label>
+                    <label>
+                      <span>Stream</span>
+                      <input name="stream" required placeholder="Science / Commerce / Arts" />
+                    </label>
+                    <button class="btn btn-primary" type="submit">Save</button>
+                    <p class="form-note" id="classManagementNote" role="status" aria-live="polite"></p>
+                  </form>
+                </div>
+
+                <div class="card">
+                  <h3 style="margin-top:0">Saved</h3>
+                  <div class="form" style="padding:0">
+                    <div style="display:flex; gap:10px; flex-wrap:wrap">
+                      <button id="classesRefresh" class="btn btn-ghost" type="button">Refresh</button>
+                    </div>
+                    <p class="form-note" id="classesListNote" role="status" aria-live="polite"></p>
+                  </div>
+                  <div id="classesList" style="display:grid; gap:10px; margin-top:12px"></div>
                 </div>
               </div>
             </section>
@@ -868,12 +928,14 @@
         const tabC = qs('#tabChapters');
         const tabA = qs('#tabAnnouncements');
         const tabT = qs('#tabTimetables');
+        const tabCM = qs('#tabClassManagement');
         const pL = qs('#panelLectures');
         const pM = qs('#panelMaterials');
         const pY = qs('#panelYears');
         const pC = qs('#panelChapters');
         const pA = qs('#panelAnnouncements');
         const pT = qs('#panelTimetables');
+        const pCM = qs('#panelClassManagement');
         const subtitle = qs('#pageSubtitle');
 
         if (tabL) tabL.classList.toggle('btn-primary', a === 'lectures');
@@ -882,6 +944,7 @@
         if (tabC) tabC.classList.toggle('btn-primary', a === 'chaptersolutions');
         if (tabA) tabA.classList.toggle('btn-primary', a === 'announcements');
         if (tabT) tabT.classList.toggle('btn-primary', a === 'timetables');
+        if (tabCM) tabCM.classList.toggle('btn-primary', a === 'classmanagement');
 
         if (pL) pL.hidden = a !== 'lectures';
         if (pM) pM.hidden = a !== 'materials';
@@ -889,6 +952,7 @@
         if (pC) pC.hidden = a !== 'chaptersolutions';
         if (pA) pA.hidden = a !== 'announcements';
         if (pT) pT.hidden = a !== 'timetables';
+        if (pCM) pCM.hidden = a !== 'classmanagement';
 
         if (subtitle) {
           subtitle.textContent =
@@ -902,6 +966,8 @@
                     ? 'Create and manage announcements'
                     : a === 'timetables'
                       ? 'Upload and manage time-tables'
+                      : a === 'classmanagement'
+                        ? 'Manage sessions, classes, and streams'
                   : 'Manage recorded lectures';
         }
 
@@ -910,6 +976,7 @@
         else if (a === 'chaptersolutions') loadChapters({ force: true });
         else if (a === 'announcements') loadAnnouncements({ force: true });
         else if (a === 'timetables') loadTimetables({ force: true });
+        else if (a === 'classmanagement') loadClasses({ force: true });
         else loadList({ force: false });
       }
 
@@ -997,6 +1064,97 @@
         if (note) note.textContent = `Loaded ${items.length} announcements.`;
       }
 
+      function renderClasses(items) {
+        const list = qs('#classesList');
+        if (!list) return;
+        list.innerHTML = '';
+
+        items.forEach((item) => {
+          const row = document.createElement('div');
+          row.className = 'info-item';
+          row.style.gridTemplateColumns = '1fr auto';
+          row.innerHTML = `
+            <div>
+              <div style="font-weight:900">${String(item.session || '').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}</div>
+              <div class="muted" style="font-size:12px; margin-top:4px">Class ${String(item.class || '').replaceAll('<', '&lt;').replaceAll('>', '&gt;')} • ${String(item.stream || '').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}</div>
+              <div class="muted" style="font-size:12px; margin-top:4px">${item.createdAt || ''}</div>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; justify-content:flex-end">
+              <button class="btn btn-ghost" type="button" data-cldel="${item.id}">Delete</button>
+            </div>
+          `;
+          list.appendChild(row);
+        });
+
+        list.querySelectorAll('[data-cldel]').forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            const id = btn.getAttribute('data-cldel');
+            if (!id) return;
+            if (!confirm('Delete this class entry?')) return;
+
+            const note = qs('#classesListNote');
+            const cfg2 = getCfg();
+            try {
+              if (note) note.textContent = 'Deleting…';
+              const res = await fetch(apiUrl(cfg2, `/admin/classes/${id}`), {
+                method: 'DELETE',
+                headers: {
+                  Authorization: authHeader(cfg2),
+                },
+              });
+
+              if (!res.ok) {
+                const txt = await res.text();
+                if (note) note.textContent = `Delete failed: ${res.status} ${txt}`;
+                return;
+              }
+
+              if (note) note.textContent = 'Deleted.';
+              await loadClasses({ force: true });
+            } catch (e) {
+              if (note) note.textContent = e?.message || 'Delete failed.';
+            }
+          });
+        });
+      }
+
+      async function loadClasses({ force = false } = {}) {
+        const cfg = getCfg();
+        const note = qs('#classesListNote');
+
+        if (!cfg.apiBase) {
+          if (note) note.textContent = 'Set API base URL first.';
+          return;
+        }
+
+        if (!force && Array.isArray(window.__classesCache)) {
+          renderClasses(window.__classesCache);
+          if (note) note.textContent = `Loaded ${window.__classesCache.length} entries.`;
+          return;
+        }
+
+        if (note) note.textContent = 'Loading…';
+        renderClasses([]);
+
+        const res = await fetch(apiUrl(cfg, '/admin/classes'), {
+          headers: {
+            Authorization: authHeader(cfg),
+          },
+        });
+
+        if (!res.ok) {
+          const txt = await res.text();
+          if (note) note.textContent = `Failed: ${res.status} ${txt}`;
+          return;
+        }
+
+        const data = await res.json();
+        const items = Array.isArray(data?.items) ? data.items : [];
+        window.__classesCache = items;
+        renderClasses(items);
+        if (note) note.textContent = `Loaded ${items.length} entries.`;
+      }
+
       function uniqSorted(arr) {
         const s = new Set(
           (Array.isArray(arr) ? arr : [])
@@ -1004,6 +1162,62 @@
             .map((x) => String(x).trim())
         );
         return Array.from(s).sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+      }
+
+      function setFormSelectOptions(selectEl, values) {
+        if (!selectEl) return;
+        const keep = selectEl.value;
+        selectEl.innerHTML = '<option value="">Select</option>';
+
+        (Array.isArray(values) ? values : []).forEach((v) => {
+          const opt = document.createElement('option');
+          opt.value = String(v);
+          opt.textContent = String(v);
+          selectEl.appendChild(opt);
+        });
+
+        if (keep && values && values.includes(keep)) {
+          selectEl.value = keep;
+        }
+      }
+
+      async function loadClassOptions({ force = false } = {}) {
+        const cfg = getCfg();
+        if (!cfg.apiBase || !cfg.user || !cfg.pass) return;
+
+        if (!force && window.__classOptions && typeof window.__classOptions === 'object') {
+          return window.__classOptions;
+        }
+
+        const res = await fetch(apiUrl(cfg, '/admin/classes'), {
+          headers: {
+            Authorization: authHeader(cfg),
+          },
+        });
+
+        if (!res.ok) {
+          window.__classOptions = null;
+          return null;
+        }
+
+        const data = await res.json();
+        const items = Array.isArray(data?.items) ? data.items : [];
+        const classes = uniqSorted(items.map((x) => x.class));
+        const streams = uniqSorted(items.map((x) => x.stream));
+        window.__classOptions = { classes, streams };
+        return window.__classOptions;
+      }
+
+      async function applyClassOptionsToForms({ force = false } = {}) {
+        const options = await loadClassOptions({ force });
+        if (!options) return;
+
+        document.querySelectorAll('[data-class-select]').forEach((sel) => {
+          setFormSelectOptions(sel, options.classes);
+        });
+        document.querySelectorAll('[data-stream-select]').forEach((sel) => {
+          setFormSelectOptions(sel, options.streams);
+        });
       }
 
       const MAX_PDF_BYTES = 250 * 1024 * 1024;
@@ -1340,6 +1554,9 @@
         qs('#tabChapters').addEventListener('click', () => setActiveTab('chaptersolutions'));
         qs('#tabAnnouncements').addEventListener('click', () => setActiveTab('announcements'));
         qs('#tabTimetables').addEventListener('click', () => setActiveTab('timetables'));
+        qs('#tabClassManagement').addEventListener('click', () => setActiveTab('classmanagement'));
+
+        applyClassOptionsToForms({ force: true });
 
         qs('#refresh').addEventListener('click', () => loadList({ force: true }));
 
@@ -1400,6 +1617,58 @@
         qs('#chaptersRefresh').addEventListener('click', () => loadChapters({ force: true }));
         qs('#announcementsRefresh').addEventListener('click', () => loadAnnouncements({ force: true }));
         qs('#timetablesRefresh').addEventListener('click', () => loadTimetables({ force: true }));
+
+        const classesRefreshBtn = qs('#classesRefresh');
+        if (classesRefreshBtn) classesRefreshBtn.addEventListener('click', () => loadClasses({ force: true }));
+
+        const classForm = qs('#classManagementForm');
+        if (classForm) {
+          classForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const cfg2 = getCfg();
+            const note = qs('#classManagementNote');
+
+            if (!cfg2.apiBase) {
+              if (note) note.textContent = 'Set API base URL first.';
+              return;
+            }
+
+            const fd = new FormData(e.target);
+            const payload = {
+              session: String(fd.get('session') || '').trim(),
+              class: String(fd.get('class') || '').trim(),
+              stream: String(fd.get('stream') || '').trim(),
+            };
+
+            try {
+              if (note) note.textContent = 'Saving…';
+              const res = await fetch(apiUrl(cfg2, '/admin/classes'), {
+                method: 'POST',
+                headers: {
+                  'content-type': 'application/json',
+                  Authorization: authHeader(cfg2),
+                },
+                body: JSON.stringify(payload),
+              });
+
+              if (!res.ok) {
+                const txt = await res.text();
+                if (note) note.textContent = `Save failed: ${res.status} ${txt}`;
+                return;
+              }
+
+              if (note) note.textContent = 'Saved.';
+              e.target.reset();
+              window.__classesCache = null;
+              window.__classOptions = null;
+              await applyClassOptionsToForms({ force: true });
+              await loadClasses({ force: true });
+            } catch (err) {
+              if (note) note.textContent = err?.message || 'Save failed.';
+            }
+          });
+        }
 
         qs('#materialForm').addEventListener('submit', async (e) => {
           e.preventDefault();
