@@ -1492,9 +1492,9 @@ textarea{resize:vertical}
     top:64px;
     left:4vw;
     right:4vw;
-    background:var(--surface-2);
-    color:var(--ink);
-    border:1px solid rgba(31,42,36,.12);
+    background:rgba(10,10,12,.92);
+    color:rgba(255,255,255,.92);
+    border:1px solid rgba(255,255,255,.14);
     border-radius:18px;
     box-shadow:var(--shadow);
     padding:10px;
@@ -1502,8 +1502,10 @@ textarea{resize:vertical}
     flex-direction:column;
     align-items:stretch;
     z-index:200;
+    backdrop-filter: blur(10px);
   }
   .nav a{padding:12px 12px; color:inherit}
+  .nav a:hover{background:rgba(255,255,255,.10)}
   .nav .btn{color:inherit}
   .nav.open{display:flex}
   .founder-speak{grid-template-columns:1fr}
