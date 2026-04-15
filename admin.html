@@ -622,6 +622,7 @@
                           <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">STUDENT-ID</th>
                           <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">NAME</th>
                           <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">PHOTO</th>
+                          <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">NUMBER</th>
                           <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">MONTH</th>
                           <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">AMOUNT</th>
                           <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">CLASS</th>
@@ -807,6 +808,7 @@
           const klass = st.class || '';
           const stream = st.stream || '';
           const photo = String(st.photoBase64 || '');
+          const number = st.number || '';
 
           const tr = document.createElement('tr');
           tr.innerHTML = `
@@ -824,6 +826,7 @@
                   : `<div class="muted" style="font-size:12px">No photo</div>`
               }
             </td>
+            <td style="padding:10px; border-bottom:1px solid rgba(15,23,42,.08)">${escapeHtml(String(number))}</td>
             <td style="padding:10px; border-bottom:1px solid rgba(15,23,42,.08)">
               <details>
                 <summary class="btn btn-ghost" style="padding:6px 10px; font-size:12px">Select months</summary>
