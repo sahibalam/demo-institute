@@ -649,6 +649,15 @@
         return btoa(unescape(encodeURIComponent(s)));
       }
 
+      function escapeHtml(s) {
+        return String(s || '')
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#39;');
+      }
+
       function applyMaterialsFilters() {
         const all = Array.isArray(window.__materialsCache) ? window.__materialsCache : [];
         const fc = qs('#materialsFilterClass')?.value || '';
