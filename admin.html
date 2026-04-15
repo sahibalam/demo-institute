@@ -892,46 +892,131 @@
         }
       }
 
-      function createFeeReminderPdfBlob({ studentId, studentName, month, amount }) {
+      async function loadImageAsDataUrl(url) {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Failed to load image: ${res.status}`);
+        const blob = await res.blob();
+        return await new Promise((resolve, reject) => {
+          const r = new FileReader();
+          r.onload = () => resolve(String(r.result || ''));
+          r.onerror = () => reject(new Error('Failed to read image'));
+          r.readAsDataURL(blob);
+        });
+      }
+
+      async function getInstituteLogoDataUrl() {
+        if (window.__demoInstituteLogoDataUrl) return window.__demoInstituteLogoDataUrl;
+        const dataUrl = await loadImageAsDataUrl('assets/logo.png');
+        window.__demoInstituteLogoDataUrl = dataUrl;
+        return dataUrl;
+      }
+
+      async function createFeeReminderPdfBlob({ studentId, studentName, month, amount }) {
         const jsPDF = window.jspdf && window.jspdf.jsPDF;
         if (!jsPDF) throw new Error('PDF generator not loaded');
 
         const doc = new jsPDF({ unit: 'pt', format: 'a4' });
         const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
 
-        const pad = 48;
-        let y = 72;
+        const pad = 44;
+        const headerH = 86;
+        const footerH = 70;
+        const contentTop = headerH + 28;
+        const contentBottom = pageHeight - footerH - 24;
 
+        const headerX = 0;
+        const headerY = 0;
+
+        doc.setFillColor(137, 217, 9);
+        doc.rect(headerX, headerY, pageWidth, headerH, 'F');
+        doc.setFillColor(222, 237, 208);
+        doc.rect(headerX, headerY + headerH - 18, pageWidth, 18, 'F');
+
+        const logoDataUrl = await getInstituteLogoDataUrl();
+        const logoW = 46;
+        const logoH = 46;
+        const logoX = pad;
+        const logoY = 18;
+        try {
+          doc.addImage(logoDataUrl, 'PNG', logoX, logoY, logoW, logoH);
+        } catch {}
+
+        const instituteName = 'DEMO INSTITUTE';
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(18);
-        doc.text('DEMO INSTITUTE', pad, y);
-        y += 22;
+        doc.setFontSize(20);
+        doc.setTextColor(0, 0, 0);
+        doc.text(instituteName, pageWidth / 2, 38, { align: 'center', baseline: 'middle' });
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(11);
+        doc.text('Fee Reminder', pageWidth / 2, 60, { align: 'center', baseline: 'middle' });
+
+        const dateStr = new Date().toLocaleDateString('en-GB');
+        doc.setFontSize(10);
+        doc.text(`Date: ${dateStr}`, pageWidth - pad, 28, { align: 'right' });
+
+        doc.setDrawColor(15, 23, 42);
+        doc.setLineWidth(0.6);
+        doc.line(pad, headerH + 8, pageWidth - pad, headerH + 8);
+
+        let y = contentTop;
+        doc.setTextColor(15, 23, 42);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.text('Student Details', pad, y);
+        y += 14;
+
+        doc.setDrawColor(15, 23, 42);
+        doc.setLineWidth(0.4);
+        doc.line(pad, y, pageWidth - pad, y);
+        y += 18;
 
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(12);
-        doc.text('Fee Reminder', pad, y);
-        y += 18;
 
-        doc.setDrawColor(200);
-        doc.line(pad, y, pageWidth - pad, y);
-        y += 22;
+        const labelW = 120;
+        const valueX = pad + labelW;
 
-        doc.setFontSize(12);
-        doc.text(`Student: ${String(studentName || '').trim()}`, pad, y);
-        y += 16;
-        doc.text(`Student ID: ${String(studentId || '').trim()}`, pad, y);
-        y += 16;
-        doc.text(`Month: ${String(month || '').trim()}`, pad, y);
-        y += 16;
-        doc.text(`Amount: Rs. ${String(amount || '').trim()}`, pad, y);
-        y += 16;
-        doc.text(`Date: ${new Date().toLocaleDateString('en-GB')}`, pad, y);
-        y += 28;
+        const row = (label, value) => {
+          if (y > contentBottom - 16) {
+            doc.addPage();
+            y = pad;
+          }
+          doc.setFont('helvetica', 'bold');
+          doc.text(String(label || ''), pad, y);
+          doc.setFont('helvetica', 'normal');
+          doc.text(String(value || ''), valueX, y);
+          y += 18;
+        };
 
+        row('Student Name:', String(studentName || '').trim());
+        row('Student ID:', String(studentId || '').trim());
+        row('Month:', String(month || '').trim());
+        row('Amount:', `Rs. ${String(amount || '').trim()}`);
+
+        y += 12;
+        doc.setFillColor(241, 245, 249);
+        doc.rect(pad, y, pageWidth - pad * 2, 62, 'F');
+        doc.setDrawColor(203, 213, 225);
+        doc.rect(pad, y, pageWidth - pad * 2, 62, 'S');
+        doc.setTextColor(15, 23, 42);
         doc.setFontSize(11);
-        doc.text('Please pay your pending fees at the earliest.', pad, y);
-        y += 16;
-        doc.text('If already paid, please ignore this reminder.', pad, y);
+        doc.text('Please pay your pending fees at the earliest.', pad + 14, y + 24);
+        doc.text('If already paid, please ignore this reminder.', pad + 14, y + 42);
+
+        const footerY = pageHeight - footerH;
+        doc.setFillColor(15, 23, 42);
+        doc.rect(0, footerY, pageWidth, 10, 'F');
+
+        doc.setTextColor(15, 23, 42);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        const instituteAddress = '7A, Mominpore Road Kolkata-23';
+        doc.text(instituteAddress, pageWidth / 2, footerY + 32, { align: 'center' });
+        doc.setTextColor(100, 116, 139);
+        doc.setFontSize(9);
+        doc.text('Learn better. Score better. Stay consistent.', pageWidth / 2, footerY + 50, { align: 'center' });
 
         return doc.output('blob');
       }
@@ -992,7 +1077,7 @@
           const j = jobs[i];
           if (note) note.textContent = `Sending ${i + 1}/${jobs.length}…`;
           try {
-            const pdfBlob = createFeeReminderPdfBlob({ studentId: j.studentId, studentName: j.studentName, month: j.month, amount: j.amount });
+            const pdfBlob = await createFeeReminderPdfBlob({ studentId: j.studentId, studentName: j.studentName, month: j.month, amount: j.amount });
             const filename = `fee-reminder-${j.studentId}-${j.month}.pdf`;
             const ok = await uploadFeeReminderPdfToWhatsApp({
               pdfBlob,
