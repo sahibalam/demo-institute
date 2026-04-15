@@ -2171,6 +2171,36 @@
         if (qs('#apiBase')) qs('#apiBase').value = base;
         if (!cfg.apiBase) setCfg({ ...cfg, apiBase: base });
 
+        const feesPanel = qs('#panelFees');
+        if (feesPanel) {
+          const closeAllFeeMonthDropdowns = () => {
+            feesPanel.querySelectorAll('details[open]').forEach((d) => d.removeAttribute('open'));
+          };
+
+          document.addEventListener('click', (e) => {
+            if (!feesPanel.contains(e.target)) {
+              closeAllFeeMonthDropdowns();
+              return;
+            }
+
+            const activeDetails = e.target.closest('details');
+            if (!activeDetails) {
+              closeAllFeeMonthDropdowns();
+              return;
+            }
+
+            feesPanel.querySelectorAll('details[open]').forEach((d) => {
+              if (d !== activeDetails) d.removeAttribute('open');
+            });
+          });
+
+          document.addEventListener('keydown', (e) => {
+            if (e.key !== 'Escape') return;
+            if (feesPanel.hidden) return;
+            closeAllFeeMonthDropdowns();
+          });
+        }
+
         const drawerToggle = qs('#drawerToggle');
         const drawerOverlay = qs('#drawerOverlay');
         const openDrawer = () => document.body.classList.add('drawer-open');
