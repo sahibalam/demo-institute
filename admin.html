@@ -84,6 +84,7 @@
                 <button class="btn btn-ghost" type="button" data-tab="sessions" id="tabSessions">Session Management</button>
                 <button class="btn btn-ghost" type="button" data-tab="classmanagement" id="tabClassManagement">Class Management</button>
                 <button class="btn btn-ghost" type="button" data-tab="students" id="tabStudents">Student Management</button>
+                <button class="btn btn-ghost" type="button" data-tab="fees" id="tabFees">Fee Management</button>
               </div>
 
               <div style="border-top:1px solid rgba(15,23,42,.12); padding-top:10px">
@@ -588,6 +589,50 @@
                 </div>
               </div>
             </section>
+
+            <section id="panelFees" data-panel="fees" hidden>
+              <div class="cards" style="grid-template-columns:1fr;">
+                <div class="card" style="min-width:0">
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap">
+                    <h3 style="margin-top:0">Fee Management</h3>
+                    <button id="feesRefresh" class="btn btn-ghost" type="button">Refresh</button>
+                  </div>
+                  <div class="form" style="padding:0; margin-top:8px">
+                    <div class="admin-filters" style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; max-width:520px">
+                      <label style="margin:0">
+                        <span>Class</span>
+                        <select id="feesFilterClass">
+                          <option value="">All</option>
+                        </select>
+                      </label>
+                      <label style="margin:0">
+                        <span>Stream</span>
+                        <select id="feesFilterStream">
+                          <option value="">All</option>
+                        </select>
+                      </label>
+                    </div>
+                  </div>
+                  <p class="form-note" id="feesNote" role="status" aria-live="polite"></p>
+                  <div style="width:100%; max-width:100%; min-width:0; overflow-x:auto; overflow-y:hidden; margin-top:10px; -webkit-overflow-scrolling:touch">
+                    <table style="width:max-content; border-collapse:collapse; min-width:980px">
+                      <thead>
+                        <tr style="text-align:left">
+                          <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">STUDENT-ID</th>
+                          <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">NAME</th>
+                          <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">PHOTO</th>
+                          <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">MONTH</th>
+                          <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">AMOUNT</th>
+                          <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">CLASS</th>
+                          <th style="padding:10px; border-bottom:1px solid rgba(15,23,42,.12)">STREAM</th>
+                        </tr>
+                      </thead>
+                      <tbody id="feesTbody"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </section>
           </section>
         </div>
       </div>
@@ -679,6 +724,19 @@
         return filtered;
       }
 
+      function applyFeesFilters() {
+        const all = Array.isArray(window.__studentsCache) ? window.__studentsCache : [];
+        const fc = qs('#feesFilterClass')?.value || '';
+        const fs = qs('#feesFilterStream')?.value || '';
+        const filtered = all.filter((x) => {
+          if (fc && String(x.class || '') !== fc) return false;
+          if (fs && String(x.stream || '') !== fs) return false;
+          return true;
+        });
+        renderFees(filtered);
+        return filtered;
+      }
+
       function updateStudentsStreamFilterOptions() {
         const all = Array.isArray(window.__studentsCache) ? window.__studentsCache : [];
         const classVal = qs('#studentsFilterClass')?.value || '';
@@ -696,6 +754,169 @@
         if (streamEl) {
           streamEl.value = prev && streams.includes(prev) ? prev : '';
         }
+      }
+
+      function updateFeesStreamFilterOptions() {
+        const all = Array.isArray(window.__studentsCache) ? window.__studentsCache : [];
+        const classVal = qs('#feesFilterClass')?.value || '';
+        const streamEl = qs('#feesFilterStream');
+        const prev = streamEl?.value || '';
+
+        const streams = uniqSorted(
+          all
+            .filter((x) => (!classVal ? true : String(x.class || '') === classVal))
+            .map((x) => x.stream)
+            .filter(Boolean)
+        );
+
+        setSelectOptions(streamEl, streams, { placeholder: 'All' });
+        if (streamEl) {
+          streamEl.value = prev && streams.includes(prev) ? prev : '';
+        }
+      }
+
+      function renderFees(items) {
+        const tbody = qs('#feesTbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+        items.forEach((st) => {
+          const id = st.studentId || st.id || st._id || '';
+          const name = st.name || '';
+          const klass = st.class || '';
+          const stream = st.stream || '';
+          const photo = String(st.photoBase64 || '');
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td style="padding:10px; border-bottom:1px solid rgba(15,23,42,.08)">
+              <label style="display:flex; align-items:center; gap:10px; margin:0">
+                <input type="checkbox" data-fee-student="${escapeHtml(String(id))}" />
+                <span style="font-weight:900">${escapeHtml(String(id))}</span>
+              </label>
+            </td>
+            <td style="padding:10px; border-bottom:1px solid rgba(15,23,42,.08)">${escapeHtml(String(name))}</td>
+            <td style="padding:10px; border-bottom:1px solid rgba(15,23,42,.08)">
+              ${
+                photo
+                  ? `<img src="${photo.replaceAll('"', '&quot;')}" alt="${escapeHtml(String(name || 'student'))}" style="width:44px; height:44px; object-fit:cover; border-radius:10px; border:1px solid rgba(15,23,42,.12); cursor:zoom-in" data-photo-zoom />`
+                  : `<div class="muted" style="font-size:12px">No photo</div>`
+              }
+            </td>
+            <td style="padding:10px; border-bottom:1px solid rgba(15,23,42,.08)">
+              <details>
+                <summary class="btn btn-ghost" style="padding:6px 10px; font-size:12px">Select months</summary>
+                <div style="display:grid; gap:6px; padding:8px 0">
+                  ${months
+                    .map(
+                      (m) =>
+                        `<label style="display:flex; align-items:center; gap:8px; margin:0; font-size:12px"><input type="checkbox" data-fee-month="${escapeHtml(String(id))}" value="${escapeHtml(m)}" /> <span>${escapeHtml(m)}</span></label>`
+                    )
+                    .join('')}
+                </div>
+              </details>
+            </td>
+            <td style="padding:10px; border-bottom:1px solid rgba(15,23,42,.08)">
+              <input type="number" min="0" step="1" placeholder="Amount" data-fee-amount="${escapeHtml(String(id))}" style="width:120px" />
+            </td>
+            <td style="padding:10px; border-bottom:1px solid rgba(15,23,42,.08)">${escapeHtml(String(klass))}</td>
+            <td style="padding:10px; border-bottom:1px solid rgba(15,23,42,.08)">${escapeHtml(String(stream))}</td>
+          `;
+
+          const img = tr.querySelector('img[data-photo-zoom]');
+          if (img) {
+            img.addEventListener('click', () => openPhotoZoom(photo));
+          }
+
+          tbody.appendChild(tr);
+        });
+      }
+
+      function setActiveTab(a) {
+        const tabL = qs('#tabLectures');
+        const tabM = qs('#tabMaterials');
+        const tabY = qs('#tabYears');
+        const tabC = qs('#tabChapters');
+        const tabA = qs('#tabAnnouncements');
+        const tabT = qs('#tabTimetables');
+        const tabS = qs('#tabSessions');
+        const tabCM = qs('#tabClassManagement');
+        const tabST = qs('#tabStudents');
+        const tabF = qs('#tabFees');
+
+        const pL = qs('#panelLectures');
+        const pM = qs('#panelMaterials');
+        const pY = qs('#panelYears');
+        const pC = qs('#panelChapters');
+        const pA = qs('#panelAnnouncements');
+        const pT = qs('#panelTimetables');
+        const pS = qs('#panelSessions');
+        const pCM = qs('#panelClassManagement');
+        const pST = qs('#panelStudents');
+        const pF = qs('#panelFees');
+        const subtitle = qs('#pageSubtitle');
+
+        if (tabL) tabL.classList.toggle('btn-primary', a === 'lectures');
+        if (tabM) tabM.classList.toggle('btn-primary', a === 'materials');
+        if (tabY) tabY.classList.toggle('btn-primary', a === 'yearspapers');
+        if (tabC) tabC.classList.toggle('btn-primary', a === 'chaptersolutions');
+        if (tabA) tabA.classList.toggle('btn-primary', a === 'announcements');
+        if (tabT) tabT.classList.toggle('btn-primary', a === 'timetables');
+        if (tabS) tabS.classList.toggle('btn-primary', a === 'sessions');
+        if (tabCM) tabCM.classList.toggle('btn-primary', a === 'classmanagement');
+        if (tabST) tabST.classList.toggle('btn-primary', a === 'students');
+        if (tabF) tabF.classList.toggle('btn-primary', a === 'fees');
+
+        if (pL) pL.hidden = a !== 'lectures';
+        if (pM) pM.hidden = a !== 'materials';
+        if (pY) pY.hidden = a !== 'yearspapers';
+        if (pC) pC.hidden = a !== 'chaptersolutions';
+        if (pA) pA.hidden = a !== 'announcements';
+        if (pT) pT.hidden = a !== 'timetables';
+        if (pS) pS.hidden = a !== 'sessions';
+        if (pCM) pCM.hidden = a !== 'classmanagement';
+        if (pST) pST.hidden = a !== 'students';
+        if (pF) pF.hidden = a !== 'fees';
+
+        try {
+          localStorage.setItem('optimum_admin_tab_v1', a);
+        } catch {}
+
+        if (subtitle) {
+          subtitle.textContent =
+            a === 'materials'
+              ? 'Manage study materials'
+              : a === 'yearspapers'
+                ? "Manage year's papers"
+                : a === 'chaptersolutions'
+                  ? 'Manage chapter solutions'
+                  : a === 'announcements'
+                    ? 'Manage announcements'
+                    : a === 'timetables'
+                      ? 'Manage time-tables'
+                      : a === 'sessions'
+                        ? 'Manage academic sessions'
+                        : a === 'classmanagement'
+                          ? 'Manage classes and streams for the current session'
+                          : a === 'students'
+                            ? 'Manage students'
+                            : a === 'fees'
+                              ? 'Manage student fees'
+                              : 'Manage recorded lectures';
+        }
+
+        if (a === 'lectures') loadList({ force: false });
+        else if (a === 'materials') loadMaterials({ force: false });
+        else if (a === 'yearspapers') loadYears({ force: false });
+        else if (a === 'chaptersolutions') loadChapters({ force: false });
+        else if (a === 'announcements') loadAnnouncements({ force: false });
+        else if (a === 'timetables') loadTimetables({ force: false });
+        else if (a === 'sessions') loadSessions({ force: false });
+        else if (a === 'classmanagement') loadClasses({ force: false });
+        else if (a === 'students') loadStudents({ force: false });
+        else if (a === 'fees') loadFees({ force: false });
       }
 
       function renderChapters(items) {
@@ -1086,129 +1307,26 @@
 
       function apiUrl(cfg, path) {
         const base = String(cfg.apiBase || '').replace(/\/+$/g, '').replace(/\s+$/g, '');
-        return `${base}${path}`;
+        const p = String(path || '').trim();
+        return base + (p.startsWith('/') ? p : '/' + p);
       }
 
-      function setActiveTab(name) {
-        const a = String(name || 'lectures');
-        localStorage.setItem('optimum_admin_tab_v1', a);
+      async function loadFees({ force = false } = {}) {
+        const note = qs('#feesNote');
+        if (note) note.textContent = 'Loading…';
 
-        const tabL = qs('#tabLectures');
-        const tabM = qs('#tabMaterials');
-        const tabY = qs('#tabYears');
-        const tabC = qs('#tabChapters');
-        const tabA = qs('#tabAnnouncements');
-        const tabT = qs('#tabTimetables');
-        const tabS = qs('#tabSessions');
-        const tabCM = qs('#tabClassManagement');
-        const tabST = qs('#tabStudents');
-        const pL = qs('#panelLectures');
-        const pM = qs('#panelMaterials');
-        const pY = qs('#panelYears');
-        const pC = qs('#panelChapters');
-        const pA = qs('#panelAnnouncements');
-        const pT = qs('#panelTimetables');
-        const pS = qs('#panelSessions');
-        const pCM = qs('#panelClassManagement');
-        const pST = qs('#panelStudents');
-        const subtitle = qs('#pageSubtitle');
-
-        if (tabL) tabL.classList.toggle('btn-primary', a === 'lectures');
-        if (tabM) tabM.classList.toggle('btn-primary', a === 'materials');
-        if (tabY) tabY.classList.toggle('btn-primary', a === 'yearspapers');
-        if (tabC) tabC.classList.toggle('btn-primary', a === 'chaptersolutions');
-        if (tabA) tabA.classList.toggle('btn-primary', a === 'announcements');
-        if (tabT) tabT.classList.toggle('btn-primary', a === 'timetables');
-        if (tabS) tabS.classList.toggle('btn-primary', a === 'sessions');
-        if (tabCM) tabCM.classList.toggle('btn-primary', a === 'classmanagement');
-        if (tabST) tabST.classList.toggle('btn-primary', a === 'students');
-
-        if (pL) pL.hidden = a !== 'lectures';
-        if (pM) pM.hidden = a !== 'materials';
-        if (pY) pY.hidden = a !== 'yearspapers';
-        if (pC) pC.hidden = a !== 'chaptersolutions';
-        if (pA) pA.hidden = a !== 'announcements';
-        if (pT) pT.hidden = a !== 'timetables';
-        if (pS) pS.hidden = a !== 'sessions';
-        if (pCM) pCM.hidden = a !== 'classmanagement';
-        if (pST) pST.hidden = a !== 'students';
-
-        if (subtitle) {
-          subtitle.textContent =
-            a === 'materials'
-              ? 'Upload and manage study materials'
-              : a === 'yearspapers'
-                ? "Upload and manage year's papers"
-                : a === 'chaptersolutions'
-                  ? 'Upload and manage chapter solutions'
-                  : a === 'announcements'
-                    ? 'Create and manage announcements'
-                    : a === 'timetables'
-                      ? 'Upload and manage time-tables'
-                      : a === 'sessions'
-                        ? 'Manage academic sessions'
-                      : a === 'classmanagement'
-                        ? 'Manage classes and streams for the current session'
-                      : a === 'students'
-                        ? 'Manage students'
-                  : 'Manage recorded lectures';
+        if (force || !Array.isArray(window.__studentsCache) || !window.__studentsCache.length) {
+          await loadStudents({ force: true });
         }
 
-        if (a === 'materials') loadMaterials({ force: true });
-        else if (a === 'yearspapers') loadYears({ force: true });
-        else if (a === 'chaptersolutions') loadChapters({ force: true });
-        else if (a === 'announcements') loadAnnouncements({ force: true });
-        else if (a === 'timetables') loadTimetables({ force: true });
-        else if (a === 'sessions') loadSessions({ force: true });
-        else if (a === 'classmanagement') loadClasses({ force: true });
-        else if (a === 'students') loadStudents({ force: true });
-        else loadList({ force: false });
-      }
-
-      function ensurePhotoZoomModal() {
-        if (qs('#photoZoomModal')) return;
-
-        const modal = document.createElement('div');
-        modal.id = 'photoZoomModal';
-        modal.style.display = 'none';
-        modal.style.cssText =
-          'position:fixed; inset:0; background:rgba(15,23,42,.72); align-items:center; justify-content:center; padding:22px; z-index:9999;';
-
-        modal.innerHTML = `
-          <div data-photo-zoom-box style="position:relative; max-width:min(920px, 96vw); max-height:92vh; width:100%; display:flex; align-items:center; justify-content:center">
-            <button type="button" data-photo-zoom-close aria-label="Close" style="position:absolute; top:-10px; right:-10px; width:38px; height:38px; border-radius:999px; border:0; cursor:pointer; background:rgba(255,255,255,.95); box-shadow:0 10px 22px rgba(0,0,0,.25); font-size:18px; line-height:38px">×</button>
-            <img data-photo-zoom-img alt="photo" style="max-width:100%; max-height:92vh; object-fit:contain; border-radius:14px; box-shadow:0 18px 48px rgba(0,0,0,.35); background:white; cursor:zoom-out" />
-          </div>
-        `;
-
-        const closeBtn = qs('[data-photo-zoom-close]', modal);
-        if (closeBtn) closeBtn.addEventListener('click', () => (modal.style.display = 'none'));
-
-        const zoomImg = qs('[data-photo-zoom-img]', modal);
-        if (zoomImg) zoomImg.addEventListener('click', () => (modal.style.display = 'none'));
-
-        modal.addEventListener('click', (e) => {
-          const box = qs('[data-photo-zoom-box]', modal);
-          if (!box) return;
-          if (!box.contains(e.target)) {
-            modal.style.display = 'none';
-          }
-        });
-
-        window.addEventListener('keydown', (e) => {
-          if (e.key === 'Escape') modal.style.display = 'none';
-        });
-
-        document.body.appendChild(modal);
-      }
-
-      function openPhotoZoom(src) {
-        ensurePhotoZoomModal();
-        const modal = qs('#photoZoomModal');
-        const img = modal ? qs('[data-photo-zoom-img]', modal) : null;
-        if (!modal || !img) return;
-        img.src = src;
-        modal.style.display = 'flex';
+        const all = Array.isArray(window.__studentsCache) ? window.__studentsCache : [];
+        const classEl = qs('#feesFilterClass');
+        const streamEl = qs('#feesFilterStream');
+        setSelectOptions(classEl, uniqSorted(all.map((x) => x.class).filter(Boolean)), { placeholder: 'All' });
+        setSelectOptions(streamEl, uniqSorted(all.map((x) => x.stream).filter(Boolean)), { placeholder: 'All' });
+        updateFeesStreamFilterOptions();
+        applyFeesFilters();
+        if (note) note.textContent = all.length ? '' : 'No students found.';
       }
 
       function renderStudents(items) {
@@ -2095,6 +2213,7 @@
         qs('#tabSessions').addEventListener('click', () => onTab('sessions'));
         qs('#tabClassManagement').addEventListener('click', () => onTab('classmanagement'));
         qs('#tabStudents').addEventListener('click', () => onTab('students'));
+        qs('#tabFees').addEventListener('click', () => onTab('fees'));
 
         loadSessions({ force: false });
 
@@ -2133,6 +2252,18 @@
         }
         if (stFilterStream) {
           stFilterStream.addEventListener('change', applyStudentsFilters);
+        }
+
+        const feeFilterClass = qs('#feesFilterClass');
+        const feeFilterStream = qs('#feesFilterStream');
+        if (feeFilterClass) {
+          feeFilterClass.addEventListener('change', () => {
+            updateFeesStreamFilterOptions();
+            applyFeesFilters();
+          });
+        }
+        if (feeFilterStream) {
+          feeFilterStream.addEventListener('change', applyFeesFilters);
         }
 
         qs('#createForm').addEventListener('submit', async (e) => {
@@ -2178,6 +2309,9 @@
 
         const studentsRefreshBtn = qs('#studentsRefresh');
         if (studentsRefreshBtn) studentsRefreshBtn.addEventListener('click', () => loadStudents({ force: true }));
+
+        const feesRefreshBtn = qs('#feesRefresh');
+        if (feesRefreshBtn) feesRefreshBtn.addEventListener('click', () => loadFees({ force: true }));
 
         const currentSessionSelect = qs('#currentSessionSelect');
         if (currentSessionSelect) {
