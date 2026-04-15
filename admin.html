@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DEMO Admin</title>
     <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png" />
     <link rel="icon" href="favicon.ico" sizes="any" />
@@ -630,6 +631,9 @@
                       <tbody id="feesTbody"></tbody>
                     </table>
                   </div>
+                  <div style="display:flex; justify-content:flex-end; margin-top:10px">
+                    <button id="feesSendReminder" class="btn btn-primary" type="button">Send</button>
+                  </div>
                 </div>
               </div>
             </section>
@@ -656,6 +660,12 @@
           .replaceAll('>', '&gt;')
           .replaceAll('"', '&quot;')
           .replaceAll("'", '&#39;');
+      }
+
+      function cssEscape(s) {
+        const v = String(s || '');
+        if (window.CSS && typeof window.CSS.escape === 'function') return window.CSS.escape(v);
+        return v.replace(/[^a-zA-Z0-9_-]/g, '\\$&');
       }
 
       function applyMaterialsFilters() {
@@ -841,6 +851,163 @@
 
           tbody.appendChild(tr);
         });
+      }
+
+      async function uploadFeeReminderPdfToWhatsApp({ pdfBlob, filename, studentNumber, studentName, month, amount }) {
+        const note = qs('#feesNote');
+        try {
+          if (!studentNumber) throw new Error('Missing student number');
+
+          const formData = new FormData();
+          formData.append('file', pdfBlob, filename);
+          formData.append('PhonenumberID', '861212063734417');
+          formData.append(
+            'PermanentAccessToken',
+            'EAASRpl7ndooBQTudWvGZBu0DsblZBg9ZCjZAjC1imNVZC5cuX4YUlAmWCssyYQ0QlOhM1x66LMjQjdg9ELdrSHOjERf7z0RUcph1dnc3QDggPcrwFUcqLXWEt485TTbV47vHXIi25IJELCRWEX5q52yiQiKnHZCcvZB2LFyUZAZCKmJoie6ZBfjQuxdUIRppzsd2lTiAZDZD'
+          );
+
+          const uploadRes = await fetch('https://botclap.com/getMediaID', { method: 'POST', body: formData });
+          const result = await uploadRes.json();
+          const mediaId = result && typeof result === 'object' ? result['MediaID'] : '';
+          if (!mediaId) throw new Error('Failed to obtain MediaID');
+
+          const var1 = encodeURIComponent(String(studentName || ''));
+          const var2 = encodeURIComponent(String(month || ''));
+          const var3 = encodeURIComponent(String(amount || ''));
+
+          const finalUrl = `https://botclap.com/apinotification/764610403118927/919875386318/institute_demo_fee/UTILITY/${studentNumber}/DEMO-INSTITUTE-Invoice/EAASRpl7ndooBQTudWvGZBu0DsblZBg9ZCjZAjC1imNVZC5cuX4YUlAmWCssyYQ0QlOhM1x66LMjQjdg9ELdrSHOjERf7z0RUcph1dnc3QDggPcrwFUcqLXWEt485TTbV47vHXIi25IJELCRWEX5q52yiQiKnHZCcvZB2LFyUZAZCKmJoie6ZBfjQuxdUIRppzsd2lTiAZDZD/861212063734417?mediaURL=${mediaId}&body1=${var1}&body2=${var2}&body3=${var3}`;
+
+          const response = await fetch(finalUrl);
+          if (!response.ok) {
+            throw new Error(`WhatsApp send failed (HTTP ${response.status})`);
+          }
+
+          return true;
+        } catch (e) {
+          if (note) note.textContent = e?.message || 'WhatsApp send failed.';
+          return false;
+        }
+      }
+
+      function createFeeReminderPdfBlob({ studentId, studentName, month, amount }) {
+        const jsPDF = window.jspdf && window.jspdf.jsPDF;
+        if (!jsPDF) throw new Error('PDF generator not loaded');
+
+        const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+        const pageWidth = doc.internal.pageSize.getWidth();
+
+        const pad = 48;
+        let y = 72;
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(18);
+        doc.text('DEMO INSTITUTE', pad, y);
+        y += 22;
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(12);
+        doc.text('Fee Reminder', pad, y);
+        y += 18;
+
+        doc.setDrawColor(200);
+        doc.line(pad, y, pageWidth - pad, y);
+        y += 22;
+
+        doc.setFontSize(12);
+        doc.text(`Student: ${String(studentName || '').trim()}`, pad, y);
+        y += 16;
+        doc.text(`Student ID: ${String(studentId || '').trim()}`, pad, y);
+        y += 16;
+        doc.text(`Month: ${String(month || '').trim()}`, pad, y);
+        y += 16;
+        doc.text(`Amount: Rs. ${String(amount || '').trim()}`, pad, y);
+        y += 16;
+        doc.text(`Date: ${new Date().toLocaleDateString('en-GB')}`, pad, y);
+        y += 28;
+
+        doc.setFontSize(11);
+        doc.text('Please pay your pending fees at the earliest.', pad, y);
+        y += 16;
+        doc.text('If already paid, please ignore this reminder.', pad, y);
+
+        return doc.output('blob');
+      }
+
+      async function sendSelectedFeeReminders() {
+        const note = qs('#feesNote');
+        const all = Array.isArray(window.__studentsCache) ? window.__studentsCache : [];
+
+        const selected = Array.from(document.querySelectorAll('input[type="checkbox"][data-fee-student]:checked'))
+          .map((el) => String(el.getAttribute('data-fee-student') || '').trim())
+          .filter(Boolean);
+
+        if (!selected.length) {
+          if (note) note.textContent = 'Select at least one student.';
+          return;
+        }
+
+        const btn = qs('#feesSendReminder');
+        if (btn) btn.disabled = true;
+
+        let sent = 0;
+        let failed = 0;
+
+        const jobs = [];
+
+        selected.forEach((studentId) => {
+          const student = all.find((x) => String(x.studentId || x.id || x._id || '').trim() === studentId) || null;
+          const studentName = student?.name || '';
+          const studentNumber = String(student?.number || '').trim();
+          const amountEl = document.querySelector(`input[data-fee-amount="${cssEscape(studentId)}"]`);
+          const amount = String(amountEl?.value || '').trim();
+          const months = Array.from(document.querySelectorAll(`input[type="checkbox"][data-fee-month="${cssEscape(studentId)}"]:checked`))
+            .map((m) => String(m.value || '').trim())
+            .filter(Boolean);
+
+          if (!studentNumber || !studentName) {
+            failed += 1;
+            return;
+          }
+
+          if (!months.length) {
+            failed += 1;
+            return;
+          }
+
+          months.forEach((month) => {
+            jobs.push({ studentId, studentName, studentNumber, month, amount });
+          });
+        });
+
+        if (!jobs.length) {
+          if (note) note.textContent = 'No valid selections to send (check number, month, amount).';
+          if (btn) btn.disabled = false;
+          return;
+        }
+
+        for (let i = 0; i < jobs.length; i += 1) {
+          const j = jobs[i];
+          if (note) note.textContent = `Sending ${i + 1}/${jobs.length}…`;
+          try {
+            const pdfBlob = createFeeReminderPdfBlob({ studentId: j.studentId, studentName: j.studentName, month: j.month, amount: j.amount });
+            const filename = `fee-reminder-${j.studentId}-${j.month}.pdf`;
+            const ok = await uploadFeeReminderPdfToWhatsApp({
+              pdfBlob,
+              filename,
+              studentNumber: j.studentNumber,
+              studentName: j.studentName,
+              month: j.month,
+              amount: j.amount,
+            });
+            if (ok) sent += 1;
+            else failed += 1;
+          } catch {
+            failed += 1;
+          }
+        }
+
+        if (note) note.textContent = `Done. Sent: ${sent}. Failed: ${failed}.`;
+        if (btn) btn.disabled = false;
       }
 
       function setActiveTab(a) {
@@ -2351,6 +2518,9 @@
 
         const feesRefreshBtn = qs('#feesRefresh');
         if (feesRefreshBtn) feesRefreshBtn.addEventListener('click', () => loadFees({ force: true }));
+
+        const feesSendBtn = qs('#feesSendReminder');
+        if (feesSendBtn) feesSendBtn.addEventListener('click', sendSelectedFeeReminders);
 
         const currentSessionSelect = qs('#currentSessionSelect');
         if (currentSessionSelect) {
