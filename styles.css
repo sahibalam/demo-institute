@@ -1349,7 +1349,12 @@ textarea{resize:vertical}
   .admission-two{grid-template-columns:1fr;}
   .admission-photo{max-width:none;}
 
+  .admission-top{position:relative;}
+
   .admission-close-btn{
+    position:absolute;
+    right:10px;
+    top:10px;
     width:40px;
     height:40px;
     padding:0;
@@ -1359,6 +1364,9 @@ textarea{resize:vertical}
     font-size:0;
     line-height:0;
     border-radius:12px;
+    background:transparent !important;
+    border:0 !important;
+    box-shadow:none !important;
   }
 
   .admission-close-btn::before{
@@ -1366,6 +1374,7 @@ textarea{resize:vertical}
     font-size:28px;
     line-height:1;
     font-weight:900;
+    color:rgba(31,42,36,.92);
   }
 }
 
