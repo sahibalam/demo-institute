@@ -1353,10 +1353,12 @@ textarea{resize:vertical}
 
   .admission-close-btn{
     position:absolute;
-    right:12px;
-    top:12px;
-    width:38px;
-    height:38px;
+    left:auto !important;
+    right:12px !important;
+    top:12px !important;
+    width:38px !important;
+    height:38px !important;
+    max-width:38px !important;
     padding:0;
     display:inline-flex;
     align-items:center;
@@ -1371,6 +1373,7 @@ textarea{resize:vertical}
     -webkit-appearance:none;
     appearance:none;
     -webkit-tap-highlight-color: transparent;
+    z-index:5;
   }
 
   .admission-close-btn:focus,
@@ -1600,12 +1603,13 @@ textarea{resize:vertical}
 
 @media (max-width: 420px){
   .container{width:min(1120px, 94vw)}
-  .btn{width:100%}
+  .btn:not(.admission-close-btn){width:100%}
   .hero-cta{flex-direction:column}
   .testimonial-actions{flex-direction:column}
   .student-toolbar{align-items:stretch}
   .student-actions{width:100%}
   #studentDrawerToggle{width:40px !important}
+  .admission-close-btn{width:38px !important; max-width:38px !important; height:38px !important; left:auto !important; right:12px !important; top:12px !important;}
 }
 
 @media (max-width: 960px){
