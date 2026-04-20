@@ -878,7 +878,7 @@
           const var2 = encodeURIComponent(String(month || ''));
           const var3 = encodeURIComponent(String(amount || ''));
 
-          const finalUrl = `https://botclap.com/apinotification/764610403118927/919875386318/institute_demo_fee/UTILITY/${studentNumber}/DEMO-INSTITUTE-Invoice/EAASRpl7ndooBQTudWvGZBu0DsblZBg9ZCjZAjC1imNVZC5cuX4YUlAmWCssyYQ0QlOhM1x66LMjQjdg9ELdrSHOjERf7z0RUcph1dnc3QDggPcrwFUcqLXWEt485TTbV47vHXIi25IJELCRWEX5q52yiQiKnHZCcvZB2LFyUZAZCKmJoie6ZBfjQuxdUIRppzsd2lTiAZDZD/861212063734417?mediaURL=${mediaId}&body1=${var1}&body2=${var2}&body3=${var3}`;
+          const finalUrl = `https://botclap.com/apinotification/764610403118927/919875386318/fee_demo/UTILITY/${studentNumber}/DEMO-INSTITUTE-Invoice/EAASRpl7ndooBQTudWvGZBu0DsblZBg9ZCjZAjC1imNVZC5cuX4YUlAmWCssyYQ0QlOhM1x66LMjQjdg9ELdrSHOjERf7z0RUcph1dnc3QDggPcrwFUcqLXWEt485TTbV47vHXIi25IJELCRWEX5q52yiQiKnHZCcvZB2LFyUZAZCKmJoie6ZBfjQuxdUIRppzsd2lTiAZDZD/861212063734417?mediaURL=${mediaId}&body1=${var1}&body2=${var2}&body3=${var3}`;
 
           const response = await fetch(finalUrl);
           if (!response.ok) {
