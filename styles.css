@@ -1595,6 +1595,11 @@ textarea{resize:vertical}
   .row{grid-template-columns:1fr; gap:6px}
 
   .info-item{grid-template-columns:1fr}
+
+  .student-item{flex-direction:column; align-items:flex-start}
+  .student-item-left{width:100%}
+  .student-item-title, .student-item-meta{white-space:normal; overflow:visible; text-overflow:clip; word-break:break-word}
+  .student-item-right{width:100%; justify-content:flex-end}
 }
 
 @media (max-width: 720px){
