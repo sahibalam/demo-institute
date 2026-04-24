@@ -1,0 +1,22 @@
+{
+  "name": "optimum-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deploy": "serverless deploy",
+    "offline": "serverless offline"
+  },
+  "dependencies": {
+    "googleapis": "^144.0.0",
+    "lambda-multipart-parser": "^1.0.1",
+    "mongodb": "^6.5.0",
+    "nodemailer": "^6.9.16",
+    "pdfkit": "^0.15.0"
+  },
+  "devDependencies": {
+    "serverless": "^3.38.0",
+    "serverless-dotenv-plugin": "^6.0.0",
+    "serverless-offline": "^13.3.3"
+  }
+}
