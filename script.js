@@ -1,7 +1,7 @@
 const qs = (s, el = document) => el.querySelector(s);
 const qsa = (s, el = document) => Array.from(el.querySelectorAll(s));
 
-const API_BASE = 'https://mmffj9rebh.execute-api.ap-south-1.amazonaws.com';
+const API_BASE = 'https://s2pdc00yoa.execute-api.ap-south-1.amazonaws.com';
 
 function youtubeEmbedUrl(url) {
   const u = String(url || '').trim();
