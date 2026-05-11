@@ -1789,4 +1789,68 @@ function setupStudentRedirects() {
 
   bind({ rootId: '#notesCarousel', view: 'materials', sectionLabel: 'Study materials offerings' });
   bind({ rootId: '#lecturesCarousel', view: 'lectures', sectionLabel: 'Recorded lectures offerings' });
+
+  const goMcq = ({ klass } = {}) => {
+    const url = new URL('mcq-test.html', window.location.href);
+    if (klass) url.searchParams.set('class', klass);
+    window.location.href = url.toString();
+  };
+
+  const bindMcq = ({ rootId, sectionLabel }) => {
+    const root = qs(rootId);
+    if (!root) return;
+
+    let down = null;
+
+    root.addEventListener(
+      'pointerdown',
+      (e) => {
+        const card = e.target?.closest?.('.note-card');
+        if (!card) return;
+        down = { x: e.clientX, y: e.clientY, card };
+      },
+      true
+    );
+
+    root.addEventListener(
+      'pointerup',
+      (e) => {
+        if (!down) return;
+        const dx = Math.abs(e.clientX - down.x);
+        const dy = Math.abs(e.clientY - down.y);
+        const card = down.card;
+        down = null;
+        if (dx > 6 || dy > 6) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const klass = getActiveClassFromSection(sectionLabel);
+        goMcq({ klass });
+      },
+      true
+    );
+
+    root.addEventListener(
+      'pointercancel',
+      () => {
+        down = null;
+      },
+      true
+    );
+
+    root.addEventListener(
+      'keydown',
+      (e) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        const card = e.target?.closest?.('.note-card');
+        if (!card) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const klass = getActiveClassFromSection(sectionLabel);
+        goMcq({ klass });
+      },
+      true
+    );
+  };
+
+  bindMcq({ rootId: '#mcqCarousel', sectionLabel: 'MCQ test offerings' });
 }

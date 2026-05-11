@@ -6,6 +6,7 @@
     <title>DEMO Admin</title>
     <link rel="stylesheet" href="styles.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="ckeditor/ckeditor.js"></script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png" />
     <link rel="icon" href="favicon.ico" sizes="any" />
@@ -86,6 +87,7 @@
                 <button class="btn btn-ghost" type="button" data-tab="classmanagement" id="tabClassManagement">Class Management</button>
                 <button class="btn btn-ghost" type="button" data-tab="students" id="tabStudents">Student Management</button>
                 <button class="btn btn-ghost" type="button" data-tab="fees" id="tabFees">Fee Management</button>
+                <button class="btn btn-ghost" type="button" data-tab="questions" id="tabQuestions">Set Question</button>
               </div>
 
               <div style="border-top:1px solid rgba(15,23,42,.12); padding-top:10px">
@@ -191,6 +193,82 @@
                     </div>
                   </div>
                   <div id="list" style="display:grid; gap:10px; margin-top:12px"></div>
+                </div>
+              </div>
+            </section>
+
+            <section id="panelQuestions" data-panel="questions" hidden>
+              <div class="cards" style="grid-template-columns:1fr;">
+                <div class="card">
+                  <h3 style="margin-top:0">Create MCQ Question</h3>
+                  <form id="questionCreateForm" class="form" style="padding:0; max-width:900px">
+                    <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px">
+                      <label>
+                        <span>Class</span>
+                        <select name="class" required data-class-select>
+                          <option value="">Select</option>
+                        </select>
+                      </label>
+                      <label>
+                        <span>Stream</span>
+                        <select name="section" required data-stream-select>
+                          <option value="">Select</option>
+                        </select>
+                      </label>
+                      <label>
+                        <span>Subject</span>
+                        <input name="subject" required placeholder="Science" />
+                      </label>
+                      <label>
+                        <span>Chapter (optional)</span>
+                        <input name="chapter" placeholder="Chapter 1" />
+                      </label>
+                    </div>
+
+                    <div style="margin-top:12px">
+                      <div class="muted" style="font-size:12px; margin-bottom:6px">Question</div>
+                      <div id="mcqQuestion" class="card" contenteditable="true" style="padding:12px; min-height:120px">Click here to type question...</div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; margin-top:12px">
+                      <div>
+                        <div class="muted" style="font-size:12px; margin-bottom:6px">Option 1</div>
+                        <div id="mcqOption1" class="card" contenteditable="true" style="padding:12px; min-height:64px">Click here to type option 1...</div>
+                      </div>
+                      <div>
+                        <div class="muted" style="font-size:12px; margin-bottom:6px">Option 2</div>
+                        <div id="mcqOption2" class="card" contenteditable="true" style="padding:12px; min-height:64px">Click here to type option 2...</div>
+                      </div>
+                      <div>
+                        <div class="muted" style="font-size:12px; margin-bottom:6px">Option 3</div>
+                        <div id="mcqOption3" class="card" contenteditable="true" style="padding:12px; min-height:64px">Click here to type option 3...</div>
+                      </div>
+                      <div>
+                        <div class="muted" style="font-size:12px; margin-bottom:6px">Option 4</div>
+                        <div id="mcqOption4" class="card" contenteditable="true" style="padding:12px; min-height:64px">Click here to type option 4...</div>
+                      </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; margin-top:12px">
+                      <label>
+                        <span>Correct Option</span>
+                        <select name="correctOption" required>
+                          <option value="">Select</option>
+                          <option value="1">1</option>
+                          <option value="2">2</option>
+                          <option value="3">3</option>
+                          <option value="4">4</option>
+                        </select>
+                      </label>
+                      <label>
+                        <span>Marks</span>
+                        <input name="marks" required type="number" min="1" step="1" value="1" />
+                      </label>
+                    </div>
+
+                    <button class="btn btn-primary" type="submit" style="margin-top:12px">Save Question</button>
+                    <p class="form-note" id="questionCreateNote" role="status" aria-live="polite"></p>
+                  </form>
                 </div>
               </div>
             </section>
@@ -1109,6 +1187,7 @@
         const tabCM = qs('#tabClassManagement');
         const tabST = qs('#tabStudents');
         const tabF = qs('#tabFees');
+        const tabQ = qs('#tabQuestions');
 
         const pL = qs('#panelLectures');
         const pM = qs('#panelMaterials');
@@ -1120,6 +1199,7 @@
         const pCM = qs('#panelClassManagement');
         const pST = qs('#panelStudents');
         const pF = qs('#panelFees');
+        const pQ = qs('#panelQuestions');
         const subtitle = qs('#pageSubtitle');
 
         if (tabL) tabL.classList.toggle('btn-primary', a === 'lectures');
@@ -1132,6 +1212,7 @@
         if (tabCM) tabCM.classList.toggle('btn-primary', a === 'classmanagement');
         if (tabST) tabST.classList.toggle('btn-primary', a === 'students');
         if (tabF) tabF.classList.toggle('btn-primary', a === 'fees');
+        if (tabQ) tabQ.classList.toggle('btn-primary', a === 'questions');
 
         if (pL) pL.hidden = a !== 'lectures';
         if (pM) pM.hidden = a !== 'materials';
@@ -1143,6 +1224,7 @@
         if (pCM) pCM.hidden = a !== 'classmanagement';
         if (pST) pST.hidden = a !== 'students';
         if (pF) pF.hidden = a !== 'fees';
+        if (pQ) pQ.hidden = a !== 'questions';
 
         try {
           localStorage.setItem('optimum_admin_tab_v1', a);
@@ -1168,6 +1250,8 @@
                             ? 'Manage students'
                             : a === 'fees'
                               ? 'Manage student fees'
+                              : a === 'questions'
+                                ? 'Create MCQ questions'
                               : 'Manage recorded lectures';
         }
 
@@ -1573,6 +1657,81 @@
         const base = String(cfg.apiBase || '').replace(/\/+$/g, '').replace(/\s+$/g, '');
         const p = String(path || '').trim();
         return base + (p.startsWith('/') ? p : '/' + p);
+      }
+
+      async function submitMcqQuestion() {
+        const form = qs('#questionCreateForm');
+        const note = qs('#questionCreateNote');
+        if (!form) return;
+
+        const cfg = getCfg();
+        if (!cfg?.apiBase || !cfg?.user || !cfg?.pass) {
+          if (note) note.textContent = 'Missing API settings (set API base URL + admin credentials).';
+          return;
+        }
+
+        const klass = String(form.class?.value || '').trim();
+        const section = String(form.section?.value || '').trim();
+        const subject = String(form.subject?.value || '').trim();
+        const chapter = String(form.chapter?.value || '').trim();
+        const correctOption = String(form.correctOption?.value || '').trim();
+        const marks = String(form.marks?.value || '').trim();
+
+        const getHtml = (id) => {
+          try {
+            if (window.CKEDITOR && CKEDITOR.instances && CKEDITOR.instances[id]) {
+              return String(CKEDITOR.instances[id].getData() || '').trim();
+            }
+          } catch {}
+          const el = qs(`#${id}`);
+          return String(el?.innerHTML || '').trim();
+        };
+
+        const payload = {
+          class: klass,
+          section,
+          subject,
+          chapter,
+          questionHtml: getHtml('mcqQuestion'),
+          optionsHtml: [getHtml('mcqOption1'), getHtml('mcqOption2'), getHtml('mcqOption3'), getHtml('mcqOption4')],
+          correctOption,
+          marks,
+        };
+
+        if (note) note.textContent = 'Saving...';
+
+        const res = await fetch(apiUrl(cfg, '/admin/questions'), {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            Authorization: authHeader(cfg),
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+          const txt = await res.text();
+          if (note) note.textContent = `Save failed: ${res.status} ${txt}`;
+          return;
+        }
+
+        if (note) note.textContent = 'Saved.';
+
+        try {
+          ['mcqQuestion', 'mcqOption1', 'mcqOption2', 'mcqOption3', 'mcqOption4'].forEach((id) => {
+            if (window.CKEDITOR && CKEDITOR.instances && CKEDITOR.instances[id]) {
+              CKEDITOR.instances[id].setData('');
+            } else {
+              const el = qs(`#${id}`);
+              if (el) el.innerHTML = '';
+            }
+          });
+        } catch {}
+
+        try {
+          form.correctOption.value = '';
+          form.marks.value = '1';
+        } catch {}
       }
 
       async function loadFees({ force = false } = {}) {
@@ -2496,6 +2655,7 @@
         const onTab = (name) => {
           setActiveTab(name);
           if (window.innerWidth <= 900) closeDrawer();
+          if (name === 'questions') setupMcqEditor();
         };
 
         qs('#tabLectures').addEventListener('click', () => onTab('lectures'));
@@ -2508,6 +2668,20 @@
         qs('#tabClassManagement').addEventListener('click', () => onTab('classmanagement'));
         qs('#tabStudents').addEventListener('click', () => onTab('students'));
         qs('#tabFees').addEventListener('click', () => onTab('fees'));
+        qs('#tabQuestions').addEventListener('click', () => onTab('questions'));
+
+        const questionForm = qs('#questionCreateForm');
+        if (questionForm) {
+          questionForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+              await submitMcqQuestion();
+            } catch (err) {
+              const note = qs('#questionCreateNote');
+              if (note) note.textContent = err?.message || 'Save failed';
+            }
+          });
+        }
 
         loadSessions({ force: false });
 
@@ -2872,7 +3046,30 @@
 
         const initial = localStorage.getItem('optimum_admin_tab_v1') || 'lectures';
         setActiveTab(initial);
-      })();
-    </script>
-  </body>
-</html>
+
+        function setupMcqEditor() {
+          if (!window.CKEDITOR || !window.CKEDITOR.inline) return;
+
+          const initInline = (id) => {
+            try {
+              if (CKEDITOR.instances && CKEDITOR.instances[id]) return;
+              const el = qs(`#${id}`);
+              if (!el) return;
+              CKEDITOR.inline(id, {
+                extraPlugins: 'ckeditor_wiris',
+              });
+            } catch {
+              // ignore
+            }
+          };
+
+          initInline('mcqQuestion');
+          initInline('mcqOption1');
+          initInline('mcqOption2');
+          initInline('mcqOption3');
+          initInline('mcqOption4');
+        }
+        })();
+      </script>
+    </body>
+  </html>
