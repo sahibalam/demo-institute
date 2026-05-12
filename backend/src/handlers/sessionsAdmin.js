@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb';
+import { ObjectId } from 'mongodb'; // Admin sessions handler
 import { json } from '../lib/response.js';
 import { requireBasicAuth } from '../lib/auth.js';
 import { getDb } from '../lib/db.js';
