@@ -8,6 +8,7 @@ export async function handler(event) {
 
   const q = event?.queryStringParameters || {};
   const filter = {};
+  const includeAnswers = q.includeAnswers === 'true';
 
   if (q.class) filter.class = String(q.class);
   if (q.stream) filter.stream = String(q.stream);
@@ -41,7 +42,7 @@ export async function handler(event) {
         id: String(x._id),
         questionHtml: x.questionHtml || x.question || '',
         optionsHtml: x.optionsHtml || x.options || [],
-        correctOption: x.correctOption,
+        correctOption: includeAnswers ? x.correctOption : undefined,
         marks: x.marks,
         class: x.class,
         stream: x.stream,

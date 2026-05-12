@@ -240,10 +240,31 @@
       }
 
       function computeScore() {
-        // We do not expose correct answers in public endpoint.
-        // For now, score can be computed only if backend returns correctness.
-        // So we show attempt summary only.
-        return 0;
+        let score = 0;
+        let totalMarks = 0;
+        
+        questions.forEach((q) => {
+          const userAnswer = answers[q.id];
+          if (userAnswer !== undefined) {
+            totalMarks += q.marks || 1;
+            if (userAnswer === q.correctOption) {
+              score += q.marks || 1;
+            }
+          }
+        });
+        
+        return { score, totalMarks, percentage: totalMarks > 0 ? Math.round((score / totalMarks) * 100) : 0 };
+      }
+
+      function getGrade(percentage) {
+        if (percentage >= 90) return 'A+ 🌟';
+        if (percentage >= 80) return 'A 👏';
+        if (percentage >= 70) return 'B+ 👍';
+        if (percentage >= 60) return 'B ✅';
+        if (percentage >= 50) return 'C+ 📚';
+        if (percentage >= 40) return 'C 📖';
+        if (percentage >= 33) return 'D+ ⚠️';
+        return 'D ❌ Need Improvement';
       }
 
       function showTest() {
@@ -259,9 +280,60 @@
         const attempted = Object.keys(answers).length;
         const total = questions.length;
         const summary = qs('#mcqResultSummary');
-        if (summary) {
-          summary.textContent = `Attempted ${attempted} of ${total} question(s). Score evaluation can be enabled by returning correct answers from backend.`;
-        }
+        
+        // Fetch questions with correct answers to calculate score
+        const klass = String(qs('#mcqClass')?.value || '').trim();
+        const section = String(qs('#mcqSection')?.value || '').trim();
+        const subject = String(qs('#mcqSubject')?.value || '').trim();
+        const chapter = String(qs('#mcqChapter')?.value || '').trim();
+
+        const url = new URL(API_BASE + '/questions');
+        if (klass) url.searchParams.set('class', klass);
+        if (section) url.searchParams.set('section', section);
+        if (subject) url.searchParams.set('subject', subject);
+        if (chapter) url.searchParams.set('chapter', chapter);
+        url.searchParams.set('includeAnswers', 'true');
+
+        fetch(url.toString())
+          .then(r => r.json())
+          .then(data => {
+            // Update questions with correct answers
+            questions = Array.isArray(data?.items) ? data.items : [];
+            
+            const result = computeScore();
+            const grade = getGrade(result.percentage);
+            
+            if (summary) {
+              summary.innerHTML = `
+                <div style="display: grid; gap: 12px;">
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+                    <span>📝 Questions Attempted:</span>
+                    <strong>${attempted} / ${total}</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+                    <span>✅ Correct Answers:</span>
+                    <strong style="color: var(--crimson);">${result.score}</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+                    <span>📊 Total Marks:</span>
+                    <strong>${result.totalMarks}</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                    <span>🎯 Percentage:</span>
+                    <strong style="color: ${result.percentage >= 60 ? 'var(--crimson)' : 'var(--orange)'}; font-size: 18px;">${result.percentage}%</strong>
+                  </div>
+                  <div style="text-align: center; margin-top: 12px; padding: 12px; background: var(--cream); border-radius: var(--radius-sm);">
+                    <div style="font-size: 24px; font-weight: 700; color: var(--crimson);">Grade: ${grade}</div>
+                  </div>
+                </div>
+              `;
+            }
+          })
+          .catch(error => {
+            if (summary) {
+              summary.textContent = `Attempted ${attempted} of ${total} question(s). Error calculating score.`;
+            }
+          });
       }
 
       function seedFromQuery() {
