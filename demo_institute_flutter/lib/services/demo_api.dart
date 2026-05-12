@@ -10,7 +10,7 @@ import '../models/timetable_item.dart';
 class DemoApi {
   DemoApi({http.Client? client}) : _client = client ?? http.Client();
 
-  static const String apiBase = 'https://mmffj9rebh.execute-api.ap-south-1.amazonaws.com';
+  static const String apiBase = 'https://s2pdc00yoa.execute-api.ap-south-1.amazonaws.com';
 
   final http.Client _client;
 

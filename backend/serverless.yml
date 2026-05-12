@@ -259,6 +259,28 @@ functions:
           path: /admin/students/{id}
           method: DELETE
 
+  questionsAdmin:
+    handler: src/handlers/questionsAdmin.handler
+    timeout: 15
+    events:
+      - httpApi:
+          path: /admin/questions
+          method: GET
+      - httpApi:
+          path: /admin/questions
+          method: POST
+      - httpApi:
+          path: /admin/questions/{id}
+          method: DELETE
+
+  questionsPublic:
+    handler: src/handlers/questionsPublic.handler
+    timeout: 15
+    events:
+      - httpApi:
+          path: /questions
+          method: GET
+
 plugins:
   - serverless-dotenv-plugin
   - serverless-offline

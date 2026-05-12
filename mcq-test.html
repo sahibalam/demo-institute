@@ -275,7 +275,9 @@
         qs('#mcqReloadBtn').addEventListener('click', loadQuestions);
 
         qs('#mcqStartBtn').addEventListener('click', async () => {
-          await loadQuestions();
+          if (!questions.length) {
+            await loadQuestions();
+          }
           if (!questions.length) return;
           answers = {};
           idx = 0;
