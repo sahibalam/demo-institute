@@ -52,76 +52,90 @@
       <section class="section">
         <div class="container" style="max-width: 980px">
           <div class="section-head">
-            <h2>MCQ <span class="offerings-accent">Test</span></h2>
-            <p>Select class/section/subject, start the test, and view your score.</p>
+            <h2>📝 <span class="offerings-accent">MCQ Test</span></h2>
+            <p>Test your knowledge with multiple choice questions. Track your progress and see your score instantly.</p>
           </div>
 
-          <div class="card" style="margin-bottom: 14px">
+          <div class="card" style="margin-bottom: 14px; border-left: 4px solid var(--orange);">
             <form class="form" id="mcqConfigForm" style="padding: 0; max-width: 900px">
               <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
                 <label>
-                  <span>Class</span>
+                  <span>📚 Class</span>
                   <input id="mcqClass" placeholder="10" />
                 </label>
                 <label>
-                  <span>Section</span>
+                  <span>📑 Section</span>
                   <input id="mcqSection" placeholder="Science" />
                 </label>
                 <label>
-                  <span>Subject</span>
+                  <span>📖 Subject</span>
                   <input id="mcqSubject" placeholder="Math" />
                 </label>
               </div>
 
               <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 10px">
                 <label>
-                  <span>Chapter (optional)</span>
+                  <span>📝 Chapter (optional)</span>
                   <input id="mcqChapter" placeholder="Chapter 1" />
                 </label>
                 <div style="display: flex; gap: 10px; align-items: end; justify-content: flex-end">
-                  <button class="btn btn-primary" id="mcqStartBtn" type="button">Start Test</button>
-                  <button class="btn btn-ghost" id="mcqReloadBtn" type="button">Reload Questions</button>
+                  <button class="btn btn-primary" id="mcqStartBtn" type="button" style="background: linear-gradient(135deg, var(--orange), var(--orange-2));">🚀 Start Test</button>
+                  <button class="btn btn-ghost" id="mcqReloadBtn" type="button">🔄 Reload</button>
                 </div>
               </div>
 
-              <p class="form-note" id="mcqConfigNote" role="status" aria-live="polite"></p>
+              <p class="form-note" id="mcqConfigNote" role="status" aria-live="polite" style="font-weight: 600; color: var(--orange-2);"></p>
             </form>
           </div>
 
-          <div class="card" id="mcqTestCard" hidden>
-            <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap">
-              <div>
-                <div style="font-weight: 1000">Progress</div>
-                <div class="muted" style="font-size: 12px" id="mcqProgress">0 / 0</div>
+          <div class="card" id="mcqTestCard" hidden style="border-left: 4px solid var(--crimson);">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--bg-2); padding: 12px; border-radius: var(--radius-sm); margin: -12px -12px 12px -12px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 20px;">📊</span>
+                <div>
+                  <div style="font-weight: 600; color: var(--orange-2);">Progress</div>
+                  <div style="font-size: 14px; font-weight: 700;" id="mcqProgress">0 / 0</div>
+                </div>
               </div>
-              <div>
-                <div style="font-weight: 1000">Score</div>
-                <div class="muted" style="font-size: 12px" id="mcqScore">0</div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 20px;">⭐</span>
+                <div>
+                  <div style="font-weight: 600; color: var(--crimson);">Score</div>
+                  <div style="font-size: 14px; font-weight: 700;" id="mcqScore">0</div>
+                </div>
               </div>
             </div>
 
-            <div style="margin-top: 12px">
-              <div class="muted" style="font-size: 12px; margin-bottom: 8px">Question</div>
-              <div id="mcqQuestionBox" class="card" style="padding: 12px"></div>
+            <div style="margin-top: 16px">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                <span style="font-size: 18px; color: var(--orange-2);">❓</span>
+                <div style="font-weight: 600; color: var(--ink-2);">Question</div>
+              </div>
+              <div id="mcqQuestionBox" class="card" style="padding: 20px; background: var(--cream); border: 2px solid var(--orange-2); border-radius: var(--radius-sm);"></div>
             </div>
 
-            <div style="display: grid; gap: 10px; margin-top: 12px" id="mcqOptions"></div>
+            <div style="display: grid; gap: 10px; margin-top: 16px" id="mcqOptions"></div>
 
-            <div style="display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap">
-              <button class="btn btn-ghost" id="mcqPrevBtn" type="button">Prev</button>
-              <button class="btn btn-primary" id="mcqNextBtn" type="button">Next</button>
-              <button class="btn btn-ghost" id="mcqFinishBtn" type="button">Finish</button>
+            <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; justify-content: space-between;">
+              <button class="btn btn-ghost" id="mcqPrevBtn" type="button" style="display: flex; align-items: center; gap: 6px;">⬅️ Prev</button>
+              <div style="display: flex; gap: 10px;">
+                <button class="btn btn-primary" id="mcqNextBtn" type="button" style="display: flex; align-items: center; gap: 6px; background: linear-gradient(135deg, var(--crimson), var(--orange-2));">Next ➡️</button>
+                <button class="btn btn-ghost" id="mcqFinishBtn" type="button" style="display: flex; align-items: center; gap: 6px; border-color: var(--crimson); color: var(--crimson);">🏁 Finish</button>
+              </div>
             </div>
 
-            <p class="form-note" id="mcqTestNote" role="status" aria-live="polite"></p>
+            <p class="form-note" id="mcqTestNote" role="status" aria-live="polite" style="font-weight: 600; color: var(--crimson); margin-top: 12px;"></p>
           </div>
 
-          <div class="card" id="mcqResultCard" hidden>
-            <h3 style="margin-top: 0">Result</h3>
-            <div class="muted" id="mcqResultSummary"></div>
-            <div style="display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap">
-              <button class="btn btn-primary" id="mcqRetakeBtn" type="button">Retake</button>
-              <a class="btn btn-ghost" href="student.html">Go to Dashboard</a>
+          <div class="card" id="mcqResultCard" hidden style="border-left: 4px solid var(--crimson); text-align: center;">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 16px;">
+              <span style="font-size: 32px;">🎉</span>
+              <h3 style="margin-top: 0; color: var(--crimson); font-weight: 700;">Test Complete!</h3>
+            </div>
+            <div id="mcqResultSummary" style="font-size: 16px; line-height: 1.6; margin: 16px 0; padding: 16px; background: var(--cream); border-radius: var(--radius-sm); border: 1px solid var(--orange-2);"></div>
+            <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; justify-content: center;">
+              <button class="btn btn-primary" id="mcqRetakeBtn" type="button" style="background: linear-gradient(135deg, var(--orange), var(--orange-2)); display: flex; align-items: center; gap: 6px;">🔄 Retake Test</button>
+              <a class="btn btn-ghost" href="student.html" style="display: flex; align-items: center; gap: 6px;">📊 Dashboard</a>
             </div>
           </div>
         </div>
